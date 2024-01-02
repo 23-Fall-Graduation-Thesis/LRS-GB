@@ -51,7 +51,7 @@ class AutoLR_Trainer(TrainerBase):
                 # model_pre = copy.deepcopy(model_try)
                 Trial_error, score, now_lr = lr_updater.try_lr_update(weva_try, epoch, now_lr)
                 optimizer_try_lrs = lr_updater.get_lr(optimizer_try)
-                print_lr = optimizer_try_lrs[1:]
+                # print_lr = optimizer_try_lrs[1:]
 
                 if Trial_error == False:
                     # Success (score >= threshold score)
@@ -74,14 +74,14 @@ class AutoLR_Trainer(TrainerBase):
                 print('trial: {}, score: {}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, score,
                     epoch_loss, epoch_acc))
 
-                weva_try_print = weva_try[1:-3]
-                weva_try_print.append(weva_try[-1])
+                # weva_try_print = weva_try[1:-3]
+                # weva_try_print.append(weva_try[-1])
 
-                epoLfmt = ['{:.6f}']*(len(weva_try_print)-1)
+                epoLfmt = ['{:.6f}']*(len(weva_try)-1)
                 epoLfmt =' '.join(epoLfmt)
                 values = []
-                for i in range(len(weva_try_print)-1):
-                    values.append(weva_try_print[i])
+                for i in range(len(weva_try)-1):
+                    values.append(weva_try[i])
                 epoLfmt = '   WeVa :' + epoLfmt
                 print(epoLfmt.format(*values))
 
@@ -95,11 +95,11 @@ class AutoLR_Trainer(TrainerBase):
                     epoLfmt = 'desWeVa :' + epoLfmt
                     print(epoLfmt.format(*values))
 
-                epoLfmt = ['{:.6f}'] * (len(print_lr)-1)
+                epoLfmt = ['{:.6f}'] * (len(optimizer_try_lrs)-1)
                 epoLfmt = ' '.join(epoLfmt)
                 values = []
-                for i in range(len(print_lr)-1):
-                    values.append(print_lr[i])
+                for i in range(len(optimizer_try_lrs)-1):
+                    values.append(optimizer_try_lrs[i])
                 epoLfmt = '     LR :' + epoLfmt
                 print(epoLfmt.format(*values))
                 print('Epoch:{:04d}'.format(epoch+1), 'train loss:{:.3f}'.format(train_loss), 'acc:{:.2f}'.format(train_acc))

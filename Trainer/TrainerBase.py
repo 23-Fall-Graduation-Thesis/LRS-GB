@@ -7,7 +7,7 @@ import torch.nn as nn
 
 class TrainerBase(ABC):
     def __init__(self, model, device, trainloader, validloader, testloader, checkpt, board_name, writer):
-        self.model = model # current model
+        self.model = model.to(device) # current model
         self.device = device
 
         self.criterion = nn.CrossEntropyLoss().to(self.device)
@@ -23,10 +23,6 @@ class TrainerBase(ABC):
     @abstractmethod
     def train_model(self):
         pass
-
-    # @abstractmethod
-    # def set_optimizer(self):
-    #     pass
 
     def train(self):
         self.model.train()
@@ -94,7 +90,7 @@ class TrainerBase(ABC):
         train_loss = 0.0
         train_acc = 0
 
-        for data, target in tqdm(self.trainloader):
+        for data, target in self.trainloader:
             # get the inputs, wrap them in Variable
             data, target = Variable(data.to(self.device)), Variable(target.to(self.device))
             optimizer_try.zero_grad()

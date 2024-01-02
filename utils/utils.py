@@ -48,11 +48,11 @@ def get_size_scalar(torch_tensor):
     return np.prod(np.array(torch_tensor.shape))
 
 def compute_weight_variation(modelA, modelB, layer_names):
-    scale = 1000000
+    # scale = 1000000
+    scale = 1
 
     L1_varation = []
 
-    # if model_name in ['resnet18', "resnet34", "resnet50", "resnet101", "resnet152", "WRN50", "WRN101"]:
     for layer_name in layer_names:
         current_layerA = modelA
         current_layerB = modelB
