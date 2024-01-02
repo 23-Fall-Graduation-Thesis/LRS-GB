@@ -1,0 +1,17 @@
+test.ipynb
+
+data/cifar10/
+data/cifar100/
+data/svhn/
+data/cub-200-2011/
+*.gz
+
+dataset_dir/__pycache__/
+model/__pycache__/
+model/weight
+*.__pycache__
+__pycache__/
+model/weight
+ref/
+
+results/
