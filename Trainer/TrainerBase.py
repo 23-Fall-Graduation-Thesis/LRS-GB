@@ -90,7 +90,7 @@ class TrainerBase(ABC):
         train_loss = 0.0
         train_acc = 0
 
-        for data, target in self.trainloader:
+        for data, target in tqdm(self.trainloader):
             # get the inputs, wrap them in Variable
             data, target = Variable(data.to(self.device)), Variable(target.to(self.device))
             optimizer_try.zero_grad()
@@ -103,7 +103,6 @@ class TrainerBase(ABC):
             train_acc += pred.eq(target.view_as(pred)).sum().item()
             loss.backward()
             optimizer_try.step()
-            break
 
         weva = compute_weight_variation(modelA, modelB, layer_names)
 

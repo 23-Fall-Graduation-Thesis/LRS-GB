@@ -28,6 +28,7 @@ class AutoLR_Trainer(TrainerBase):
         bad_count = 0
 
         for epoch in range(epochs):
+            print('Epoch:{:04d}'.format(epoch+1))
             # TODO
             # if not strict :
             #     # decreasing thr_score 
@@ -67,12 +68,10 @@ class AutoLR_Trainer(TrainerBase):
                     # now_lr.insert(0, now_lr[0]*self.conv1_factor) # for base_params (pruned layers) -> 우리는 base params 없다고 가정
 
                 #Print current state
-                # train_acc = train_acc.float()
                 epoch_loss = train_loss /  len(self.trainloader.dataset)
                 epoch_acc = train_acc /  len(self.trainloader.dataset)
 
-                print('trial: {}, score: {}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, score,
-                    epoch_loss, epoch_acc))
+                print('trial: {}, score: {}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, score, epoch_loss, epoch_acc))
 
                 # weva_try_print = weva_try[1:-3]
                 # weva_try_print.append(weva_try[-1])
@@ -102,9 +101,8 @@ class AutoLR_Trainer(TrainerBase):
                     values.append(optimizer_try_lrs[i])
                 epoLfmt = '     LR :' + epoLfmt
                 print(epoLfmt.format(*values))
-                print('Epoch:{:04d}'.format(epoch+1), 'train loss:{:.3f}'.format(train_loss), 'acc:{:.2f}'.format(train_acc))
-                # print('test accuracy : top-1 {:.4f} top-2 {:.4f} top-4 {:.4f} top-8 {:.4f}'.format(results[0]*100,results[1]*100,results[2]*100,results[3]*100))
-
+                print()
+            
             if epoch % 5 == 0:
                 valid_loss, valid_acc = self.validation()
                 print('validation loss:{:.3f}'.format(valid_loss), 'acc:{:.2f}'.format(valid_acc))

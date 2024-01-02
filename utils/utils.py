@@ -48,8 +48,7 @@ def get_size_scalar(torch_tensor):
     return np.prod(np.array(torch_tensor.shape))
 
 def compute_weight_variation(modelA, modelB, layer_names):
-    # scale = 1000000
-    scale = 1
+    scale = 1000000
 
     L1_varation = []
 
