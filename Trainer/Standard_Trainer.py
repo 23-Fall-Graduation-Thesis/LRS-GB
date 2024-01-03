@@ -41,7 +41,6 @@ class Standard_Trainer(TrainerBase):
             if bad_count == 30:
                 break
             
-        
         end_time = datetime.now().strftime('%m-%d_%H%M%S')
         print('\nFinish training at', end_time)
         
