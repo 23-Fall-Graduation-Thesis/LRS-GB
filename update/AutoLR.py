@@ -24,8 +24,14 @@ class AutoLR(LRUpdate):
         # model layer names
         self.layer_names = dict()
         for name, _ in model.named_parameters():
-            layer_name = ".".join(name.split(".")[:-1])
-            self.layer_names[layer_name] = len(self.layer_names)-1
+            name_split = name.split(".")
+            layer_name = ".".join(name_split[:-1] if len(name_split)<3 else name_split[:2])
+            '''
+            alexnet : features.0, features.3, classifier.4 ..
+            resnet : layer1.1, layer2.0, fc ... (block)
+            '''
+            if layer_name not in self.layer_names:
+                self.layer_names[layer_name] = len(self.layer_names)
     
     def get_lr(self, optimizer):
         lrs = []
@@ -85,7 +91,7 @@ class AutoLR(LRUpdate):
     
     # AutoLR utils
     def weva2index(self, weva):
-        weva = weva[1:-self.mlast]
+        # weva = weva[1:-self.mlast]
         weva_index = [weva.index(x) for x in sorted(weva)]
         return weva_index
 

@@ -1,13 +1,11 @@
 from Trainer.TrainerBase import TrainerBase
 from update.AutoLR import AutoLR
 import copy, torch
-import torch.nn as nn
 from datetime import datetime
 
 class AutoLR_Trainer(TrainerBase):
     def __init__(self, model, device, trainloader, validloader, testloader, checkpt, board_name, writer, max_f, min_f):
         super().__init__(model, device, trainloader, validloader, testloader, checkpt, board_name, writer)
-        self.conv1_factor = 0.5 ## ?
         self.max_f = max_f
         self.min_f = min_f
 
@@ -48,11 +46,8 @@ class AutoLR_Trainer(TrainerBase):
                 model_try = copy.deepcopy(self.model)
                 optimizer_try = lr_updater.optimizer_binding(model_try, now_lr)
                 weva_try, train_loss, train_acc = self.train_1epoch(model_try, optimizer_try, lr_updater.layer_names)
-                # lr updater에 함수 만들기
-                # model_pre = copy.deepcopy(model_try)
                 Trial_error, score, now_lr = lr_updater.try_lr_update(weva_try, epoch, now_lr)
                 optimizer_try_lrs = lr_updater.get_lr(optimizer_try)
-                # print_lr = optimizer_try_lrs[1:]
 
                 if Trial_error == False:
                     # Success (score >= threshold score)
@@ -67,14 +62,8 @@ class AutoLR_Trainer(TrainerBase):
                     now_lr = lr_updater.adjustLR(weva_table, lr_table, score, epoch)
                     # now_lr.insert(0, now_lr[0]*self.conv1_factor) # for base_params (pruned layers) -> 우리는 base params 없다고 가정
 
-                #Print current state
-                epoch_loss = train_loss /  len(self.trainloader.dataset)
-                epoch_acc = train_acc /  len(self.trainloader.dataset)
 
-                print('trial: {}, score: {}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, score, epoch_loss, epoch_acc))
-
-                # weva_try_print = weva_try[1:-3]
-                # weva_try_print.append(weva_try[-1])
+                print('trial: {}, score: {}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, score, train_loss, train_acc))
 
                 epoLfmt = ['{:.6f}']*(len(weva_try)-1)
                 epoLfmt =' '.join(epoLfmt)
@@ -102,13 +91,19 @@ class AutoLR_Trainer(TrainerBase):
                 epoLfmt = '     LR :' + epoLfmt
                 print(epoLfmt.format(*values))
                 print()
-            
+
+            self.writer.add_scalar('Loss/train', train_loss, epoch)
+            self.writer.add_scalar('Acc/train', train_acc, epoch)
+
             if epoch % 5 == 0:
                 valid_loss, valid_acc = self.validation()
                 print('validation loss:{:.3f}'.format(valid_loss), 'acc:{:.2f}'.format(valid_acc))
+                self.writer.add_scalar('Loss/val', valid_loss, epoch)
+                self.writer.add_scalar('Acc/val', valid_acc, epoch)
+                self.writer.add_scalar('Generalization_GAP', train_acc - valid_acc, epoch)
                 print()
 
-            if valid_loss < best:
+            if valid_loss <= best:
                 best = valid_loss
                 best_epoch = epoch + 1
                 torch.save(self.model.state_dict(), self.checkpt) 

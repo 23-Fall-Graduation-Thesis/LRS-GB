@@ -104,6 +104,9 @@ class TrainerBase(ABC):
             loss.backward()
             optimizer_try.step()
 
+        train_loss = train_loss / len(self.trainloader.dataset)
+        train_acc = train_acc / len(self.trainloader.dataset) * 100
+
         weva = compute_weight_variation(modelA, modelB, layer_names)
 
         return weva, train_loss, train_acc

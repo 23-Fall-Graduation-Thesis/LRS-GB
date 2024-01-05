@@ -4,6 +4,5 @@ class Ours(UpdateBase):
     def __init__(self, optimizer):
         self.optim = optimizer
 
-    def update_lr(self):
-        # not update
-        return self.optim
+    # TODO : our methods, like AutoLR.py
+    # 여기 안에서 Clip, target weight varation 계산, lr 계산 등 진행

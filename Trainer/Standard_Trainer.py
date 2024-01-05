@@ -30,7 +30,7 @@ class Standard_Trainer(TrainerBase):
                 print()
                 self.writer.add_scalar('Loss/val', valid_loss, epoch)
                 self.writer.add_scalar('Acc/val', valid_acc, epoch)
-            if valid_loss < best:
+            if valid_loss <= best:
                 best = valid_loss
                 best_epoch = epoch + 1
                 torch.save(self.model.state_dict(), self.checkpt)

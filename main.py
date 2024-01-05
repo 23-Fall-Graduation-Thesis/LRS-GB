@@ -53,7 +53,6 @@ if __name__ == '__main__':
     model = select_model(conf['model'], num_class, pretrained_model=(not conf['pretrain']), checkpt=conf['model_path'])
     # print('Experiment Setting:', setting, '|Croess-Entropy Loss|SGD optimizer')
 
-
     if conf['mode'] == 'standard' or conf['pretrain']:
         trainer = Standard_Trainer(model, conf['device'], trainloader, validloader, testloader, checkpt, board_name, writer)
     elif conf['mode'] == 'auto':

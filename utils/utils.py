@@ -34,16 +34,6 @@ def set_loggers(conf):
         
     return checkpt, board_name, writer, setting
 
-def set_optimizer(model, pretrain, mode):
-    if mode == 'standard' or pretrain:
-        optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=conf['lr'])
-    elif mode == 'auto':
-        pass
-    elif mode == 'ours':
-        pass
-    else:
-        raise ValueError(f'Invalid finetune mode input.')
-
 def get_size_scalar(torch_tensor):
     return np.prod(np.array(torch_tensor.shape))
 
