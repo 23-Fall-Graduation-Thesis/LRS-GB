@@ -1,4 +1,4 @@
-# LRS_GB
+# LRS-GB
 ### *Learning Rate Schedule for Fine-Tuning with Generalization Bound Guarantees*
 2024-1 Graduation Project code (Dept.of CSE, Konkuk Univ)  
 > BaseLine : [AutoLR](https://github.com/youngminPIL/AutoLR)
