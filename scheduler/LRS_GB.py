@@ -1,6 +1,6 @@
-from update.UpdateBase import UpdateBase
+from scheduler.SchedulerBase import SchedulerBase
 
-class Ours(UpdateBase):
+class LRS_GB(SchedulerBase):
     def __init__(self, optimizer):
         self.optim = optimizer
 

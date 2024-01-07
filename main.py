@@ -6,8 +6,8 @@ from dataset_dir.datasets import datasetload
 
 from utils.utils import *
 from model.pretrained_models import select_model
-from Trainer.Standard_Trainer import Standard_Trainer
-from Trainer.AutoLR_Trainer import AutoLR_Trainer
+from trainer.Standard_Trainer import Standard_Trainer
+from trainer.AutoLR_Trainer import AutoLR_Trainer
 
 def arg_parse(parser):
     parser = argparse.ArgumentParser()

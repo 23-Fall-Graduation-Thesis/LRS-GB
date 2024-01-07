@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class LRUpdate(ABC):
+class TargetWevaBase(ABC):
     @abstractmethod
     def __init__(self):
         pass

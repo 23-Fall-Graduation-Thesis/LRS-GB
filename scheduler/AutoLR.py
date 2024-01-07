@@ -1,8 +1,8 @@
-from update.UpdateBase import LRUpdate
+from scheduler.SchedulerBase import SchedulerBase
 
 import torch.optim as optim
 
-class AutoLR(LRUpdate):
+class AutoLR(SchedulerBase):
     def __init__(self, model, init_lr, max_f, min_f):
         self.max_f = max_f
         self.min_f = min_f
