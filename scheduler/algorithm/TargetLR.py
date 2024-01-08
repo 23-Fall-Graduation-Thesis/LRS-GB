@@ -18,7 +18,7 @@ class TargetLRBase(ABC):
 
 class AutoLRTargetLR(TargetLRBase):
     def __init__(self):
-        pass
+        super().__init__()
 
 
     def cal_target_lr(self, now_weva, now_lr, target_weva, cls_lr):
@@ -38,7 +38,7 @@ class AutoLRTargetLR(TargetLRBase):
 # Trial 1
 class LRSGBTargetLR(AutoLRTargetLR):
     def __init__(self):
-        pass
+        super().__init__()
 
 
     def cal_target_init_lr(self, now_weva, now_lr, now_init_weva, target_init_weva, cls_lr):
