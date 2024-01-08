@@ -72,3 +72,19 @@ def compute_weight_variation(modelA, modelB, layer_names):
                 L1_varation.append(variation.detach().numpy()/nweight*scale)
 
     return L1_varation
+
+
+def get_class(class_name):
+    try:
+        cls = globals()[class_name]
+        return cls
+    except KeyError:
+        raise ValueError(f"'{class_name}' is not exist.")
+
+
+def get_instance(class_name, *args, **kwargs):
+    try:
+        cls = globals()[class_name]
+        return cls(*args, **kwargs)
+    except KeyError:
+        raise ValueError(f"'{class_name}' is not exist.")
