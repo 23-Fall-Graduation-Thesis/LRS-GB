@@ -6,8 +6,8 @@ from dataset_dir.datasets import datasetload
 
 from utils.utils import *
 from model.pretrained_models import select_model
-from trainer.Standard_Trainer import Standard_Trainer
-from trainer.AutoLR_Trainer import AutoLR_Trainer
+from Trainer.Standard_Trainer import Standard_Trainer
+from Trainer.AutoLR_Trainer import AutoLR_Trainer
 
 def arg_parse(parser):
     parser = argparse.ArgumentParser()
@@ -53,10 +53,11 @@ if __name__ == '__main__':
     model = select_model(conf['model'], num_class, pretrained_model=(not conf['pretrain']), checkpt=conf['model_path'])
     # print('Experiment Setting:', setting, '|Croess-Entropy Loss|SGD optimizer')
 
+
     if conf['mode'] == 'standard' or conf['pretrain']:
-        trainer = Standard_Trainer(model, conf['device'], trainloader, validloader, testloader, checkpt, board_name, writer)
+        trainer = Standard_Trainer(model, conf['model'], conf['device'], (trainloader, validloader, testloader), (checkpt, board_name, writer))
     elif conf['mode'] == 'auto':
-        trainer = AutoLR_Trainer(model, conf['device'], trainloader, validloader, testloader, checkpt, board_name, writer, conf['max_f'], conf['min_f'])
+        trainer = AutoLR_Trainer(model, conf['model'], conf['device'], (trainloader, validloader, testloader), (checkpt, board_name, writer), conf['max_f'], conf['min_f'])
     else:
         pass
         # trainer = Ours_Trainser()

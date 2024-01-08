@@ -1,12 +1,12 @@
-from trainer.TrainerBase import TrainerBase
+from Trainer.TrainerBase import TrainerBase
 
 import torch
 from datetime import datetime
 import torch.nn as nn
 
 class Standard_Trainer(TrainerBase):
-    def __init__(self, model, device, trainloader, validloader, testloader, checkpt, board_name, writer):
-        super().__init__(model, device, trainloader, validloader, testloader, checkpt, board_name, writer)
+    def __init__(self, model, model_name, device, loaders, loggers):
+        super().__init__(self, model, model_name, device, loaders, loggers)
 
     def train_model(self, epochs, init_lr):
         # loss, optimizer define

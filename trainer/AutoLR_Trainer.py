@@ -1,11 +1,11 @@
-from trainer.TrainerBase import TrainerBase
+from Trainer.TrainerBase import TrainerBase
 from scheduler.AutoLR import AutoLR
 import copy, torch
 from datetime import datetime
 
 class AutoLR_Trainer(TrainerBase):
-    def __init__(self, model, device, trainloader, validloader, testloader, checkpt, board_name, writer, max_f, min_f):
-        super().__init__(model, device, trainloader, validloader, testloader, checkpt, board_name, writer)
+    def __init__(self, model, model_name, device, loaders, loggers, max_f, min_f):
+        super().__init__(model, model_name, device, loaders, loggers)
         self.max_f = max_f
         self.min_f = min_f
 
@@ -18,20 +18,20 @@ class AutoLR_Trainer(TrainerBase):
         lr_success = []
         ntrial_success = []
 
-        lr_updater = AutoLR(self.model, init_lr, self.max_f, self.min_f)
+        lr_updater = AutoLR(self.model, self.model_name, init_lr, self.max_f, self.min_f)
         self.optimizer = lr_updater.optimizer_binding(self.model, [init_lr])
         
         best = 99999999
         best_epoch = 0
         bad_count = 0
+        strict = False
 
         for epoch in range(epochs):
             print('Epoch:{:04d}'.format(epoch+1))
-            # TODO
             # if not strict :
             #     # decreasing thr_score 
-            #     if epoch >= 1 and thr_score > 0.8:
-            #         thr_score = thr_score*0.99
+            #     if epoch >= 1 and lr_updater.thr_score > 0.8:
+            #         lr_updater.thr_score = lr_updater.thr_score*0.99
 
             Trial_error = True
 
@@ -45,7 +45,7 @@ class AutoLR_Trainer(TrainerBase):
                 trial = trial + 1
                 model_try = copy.deepcopy(self.model)
                 optimizer_try = lr_updater.optimizer_binding(model_try, now_lr)
-                weva_try, train_loss, train_acc = self.train_1epoch(model_try, optimizer_try, lr_updater.layer_names)
+                weva_try, train_loss, train_acc = self.train_1epoch(model_try, optimizer_try, lr_updater.layer_name_dict)
                 Trial_error, score, now_lr = lr_updater.try_lr_update(weva_try, epoch, now_lr)
                 optimizer_try_lrs = lr_updater.get_lr(optimizer_try)
 

@@ -1,24 +1,21 @@
 from abc import ABC, abstractmethod
 import torch, copy
 from torch.autograd import Variable
-from utils.utils import compute_weight_variation
+from utils.lr_utils import compute_weight_variation
 from tqdm import tqdm
 import torch.nn as nn
 
 class TrainerBase(ABC):
-    def __init__(self, model, device, trainloader, validloader, testloader, checkpt, board_name, writer):
+    def __init__(self, model, model_name, device, loaders, loggers):
         self.model = model.to(device) # current model
+        self.model_name = model_name
         self.device = device
 
         self.criterion = nn.CrossEntropyLoss().to(self.device)
 
-        self.trainloader = trainloader
-        self.validloader = validloader
-        self.testloader = testloader
+        self.trainloader, self.validloader, self.testloader = loaders
 
-        self.checkpt = checkpt
-        self.board_name = board_name
-        self.writer = writer
+        self.checkpt, self.board_name, self.writer = loggers
 
     @abstractmethod
     def train_model(self):
@@ -83,7 +80,7 @@ class TrainerBase(ABC):
         
         return test_loss, test_acc
     
-    def train_1epoch(self, modelB, optimizer_try, layer_names):
+    def train_1epoch(self, modelB, optimizer_try, layer_names_dict):
         modelA = copy.deepcopy(modelB)
         modelB = modelB.to(self.device)
 
@@ -102,10 +99,11 @@ class TrainerBase(ABC):
             train_acc += pred.eq(target.view_as(pred)).sum().item()
             loss.backward()
             optimizer_try.step()
+            break
 
         train_loss = train_loss / len(self.trainloader.dataset)
         train_acc = train_acc / len(self.trainloader.dataset) * 100
 
-        weva = compute_weight_variation(modelA, modelB, layer_names)
+        weva = compute_weight_variation(modelA, modelB, layer_names_dict)
 
         return weva, train_loss, train_acc
