@@ -6,8 +6,6 @@ from utils.lr_utils import layer_block_info
 class AutoLR(SchedulerBase):
     def __init__(self, model, model_name, init_lr, max_f, min_f, instances):
         super().__init__(model, model_name, init_lr, instances)
-        self.max_f = max_f
-        self.min_f = min_f
         self.desired_weva_set = []
 
         self.scale = 1000000
@@ -19,9 +17,10 @@ class AutoLR(SchedulerBase):
         self.mlast = 3
 
         self.thr_score = 0.94
+        self.weva_mannager.init(max_f, min_f)
 
 
-    def adjustLR(self, weva_table, lr_table, score, n_epoch):
+    def adjustLR(self, weva_table, lr_table, n_epoch):
         # calculate new lr
         # now_weva = weva_table[-1][1:-3] # 맨 앞 : base_params, 맨 뒤 2개 layer pruning, classifier lr 고정
         now_weva = weva_table[-1][:-1] # 맨 뒤의 classifier lr만 고정했다고 가정하고 진행

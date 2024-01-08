@@ -78,11 +78,35 @@ class SchedulerBase(ABC):
     
     
     @abstractmethod
-    def adjust_lr(self, weva_table, lr_table, score, n_epoch):
+    def adjust_lr(self, weva_table, lr_table, n_epoch): 
+        """새로운 target_lr을 계산합니다.
+
+        Args:
+            weva_table (_type_): _description_
+            lr_table (_type_): _description_
+            n_epoch (_type_): _description_
+        
+        Calls:
+            self.weva_manager.cal_target_weva() / cal_target_init_weva()
+            self.cal_target_lr() / cal_target_init_lr() / select_lr()
+        """
         pass
     
     
     @abstractmethod
     def try_lr_update(self, weva_try, epoch, now_lr):
+        """weva를 기반으로 조건을 확인합니다.
+
+        Args:
+            weva_try (_type_): 시도하는 weva
+            epoch (_type_): 현재 epoch
+            now_lr (_type_): 시도하는 lr
+        
+        Calls:
+            self.condition_manager.checK_condition()
+        
+        Returns:
+            Traial_error: 수정이 필요한지를 나타냅니다. (True: 필요 / False: 필요하지 않음)
+        """
         pass
     

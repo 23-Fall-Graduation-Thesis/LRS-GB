@@ -1,16 +1,51 @@
 from abc import ABC, abstractmethod
 
 class TargetLRBase(ABC):
-    @abstractmethod
     def __init__(self):
         pass
 
-    # def model_layer_names(self, model):
-    #     # TODO
-    #     return []
+    @abstractmethod
+    def cal_target_lr(self):
+        pass
     
-    # def get_lr(self,):
-    #     lrs = []
-    #     for i in range(len(self.optimizer.param_groups)):
-    #         lrs.append(self.optimizer.param_groups[i]['lr'])
-    #     return lrs
+    @abstractmethod
+    def cal_target_init_lr(self):
+        pass
+    
+    @abstractmethod
+    def select_lr(self):
+        pass
+
+class AutoLRTargetLR(TargetLRBase):
+    def __init__(self):
+        pass
+
+
+    def cal_target_lr(self, now_weva, now_lr, target_weva, cls_lr):
+        target_lr = now_weva[:]
+        Gvalue = []
+        for i in range(len(now_lr)):
+            Gvalue.append(now_weva[i]/now_lr[i])
+
+        for i in range(len(target_lr)):
+            target_lr[i] = (target_weva[i] - now_weva[i]) / Gvalue[i] + now_lr[i]
+
+        target_lr.append(cls_lr) # classifier lr 고정해서 사용
+
+        return target_lr
+
+
+# Trial 1
+class LRSGBTargetLR(AutoLRTargetLR):
+    def __init__(self):
+        pass
+
+
+    def cal_target_init_lr(self, now_weva, now_lr, now_init_weva, target_init_weva, cls_lr):
+        target_init_lr = []
+        for i in range(len(now_lr)):
+            target_init_lr[i] = ( now_lr[i] * (target_init_weva[i] - now_init_weva[i] + now_weva[i])) / now_weva[i]
+
+        target_init_lr.append(cls_lr)
+        
+        return target_init_lr
