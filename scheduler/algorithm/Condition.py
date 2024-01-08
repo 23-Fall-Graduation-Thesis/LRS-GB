@@ -76,7 +76,7 @@ class LRSGBCondition(ConditionBase):
         check_autoLR, check_GB = True, True
         weva_idx = self.sigma_function(weva_try[:-1])
         score = self.get_score(weva_idx)
-        for i in range(len(init_weva_try)):
+        for i in range(len(self.constraints)):
             if init_weva_try[i] > self.constraints[i]:
                 check_GB = False
                 break    

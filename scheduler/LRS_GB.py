@@ -29,7 +29,7 @@ class LRS_GB(SchedulerBase):
     def adjustLR(self, weva_table, now_init_weva, lr_table, n_epoch, GB_update):
         now_weva = weva_table[-1][:-1]
         now_lr = lr_table[-1][:-1]
-        
+        now_init_weva = now_init_weva[:-1] 
         
         target_weva = self.weva_manager.cal_target_weva(weva_table, n_epoch)
         if not target_weva:
@@ -40,9 +40,6 @@ class LRS_GB(SchedulerBase):
         target_init_weva = self.weva_manager.cal_target_init_weva(now_init_weva, n_epoch)
         self.target_init_weva_set.append(target_init_weva)
         
-        now_init_weva = now_init_weva[:-1]
-        target_init_weva = target_init_weva[:-1]
-        
         target_lr = self.lr_manager.cal_target_lr(now_weva, now_lr, target_weva, self.cls_lr)
         target_init_lr = self.lr_manager.cal_target_init_lr(now_weva, now_lr, now_init_weva, target_init_weva, self.cls_lr)
         
@@ -52,6 +49,7 @@ class LRS_GB(SchedulerBase):
     
     
     def try_lr_update(self, weva_try, init_weva_try):
+        print(len(weva_try), len(init_weva_try))
         check_autoLR, check_GB, score = self.condition_manager.check_condition(weva_try, init_weva_try)
         # if (check_autoLR and check_GB) or (GB_update and check_GB) :
         #     Trial_error = False

@@ -86,24 +86,31 @@ class LRSGBTargetWeva(AutoLRTargetWeva):
     def __init__(self):
         pass
     
-    def init(self, max_f, min_f, constraints):
+    def init(self, max_f, min_f, constraints, trial_effect=0.05):
         super().__init__()
         super().init(max_f, min_f)
         self.constraints = constraints
+        self.trial = 0
+        self.trial_effect = trial_effect
 
     
+    def reset_trial(self):
+        self.trial = 0
+    
+    
     def cal_target_init_weva(self, now_init_weva, n_epoch):
-        #TODO: Trial 횟수 인자로 줘서 시도횟수 많아질수록 더 많이 bound에서 떨구기
         if n_epoch == 0:
             #TODO:  
             target_init_weva = now_init_weva
-            for i in range(len(now_init_weva)):
+            for i in range(len(self.constraints)):
                 if now_init_weva[i] > self.constraints[i]:
-                    target_init_weva[i] = self.constraints[i]
+                    target_init_weva[i] = self.constraints[i] - self.trial * self.trial_effect
+            self.trial += 1
         else:
             target_init_weva = now_init_weva
-            for i in range(len(now_init_weva)):
+            for i in range(len(self.constraints)):
                 if now_init_weva[i] > self.constraints[i]:
-                    target_init_weva[i] = self.constraints[i]
+                    target_init_weva[i] = self.constraints[i] - self.trial * self.trial_effect
+            self.trial += 1
         
         return target_init_weva

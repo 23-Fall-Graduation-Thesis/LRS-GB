@@ -46,3 +46,12 @@ def layer_block_info(model_name):
         return [['conv1', 'bn1'], ['layer1.0'], ['layer1.1'], ['layer1.2'], ['layer2.0'], ['layer2.1'],
                 ['layer2.2'], ['layer2.3'], ['layer3.0'], ['layer3.1'], ['layer3.2'], ['layer3.3'],
                 ['layer3.4'], ['layer3.5'], ['layer4.0'], ['layer4.1'], ['layer4.2'], ['fc']]
+        
+
+def get_num_layer(model_name):
+    if model_name == "alexnet":
+        return 5
+    elif model_name == "resnet18":
+        return 9
+    elif model_name == "resnet50":
+        return 17

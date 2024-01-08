@@ -143,7 +143,8 @@ class LRS_GB_Trainer(TrainerBase):
 
             self.writer.add_scalar('Loss/train', train_loss, epoch)
             self.writer.add_scalar('Acc/train', train_acc, epoch)
-
+            lr_scheduler.weva_manager.reset_trial()
+            
             if epoch % 5 == 0:
                 valid_loss, valid_acc = self.validation()
                 print('validation loss:{:.3f}'.format(valid_loss), 'acc:{:.2f}'.format(valid_acc))

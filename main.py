@@ -5,6 +5,7 @@ import numpy as np
 from dataset_dir.datasets import datasetload
 
 from utils.utils import *
+from utils.lr_utils import get_num_layer
 from model.pretrained_models import select_model
 from trainer.Standard_Trainer import Standard_Trainer
 from trainer.AutoLR_Trainer import AutoLR_Trainer
@@ -60,8 +61,12 @@ if __name__ == '__main__':
     elif conf['mode'] == 'auto':
         trainer = AutoLR_Trainer(model, conf['model'], conf['device'], (trainloader, validloader, testloader), (checkpt, board_name, writer), conf['max_f'], conf['min_f'])
     elif conf['mode'] == 'GB':
-        constraint = [0.0001, 0.0015, 0.002, 0.003, 0.005, 0.006] #TODO 
-        trainer = LRS_GB_Trainer(model, conf['model'], conf['device'], (trainloader, validloader, testloader), (checkpt, board_name, writer), conf['max_f'], conf['min_f'], constraint)
+        num_layer = get_num_layer(conf['model'])
+        #TODO
+        reg = 1.3
+        scale = 3.5
+        constraints = [reg * (scale ** idx) for idx in range(num_layer)]
+        trainer = LRS_GB_Trainer(model, conf['model'], conf['device'], (trainloader, validloader, testloader), (checkpt, board_name, writer), conf['max_f'], conf['min_f'], constraints)
     else:
         pass
         # trainer = Ours_Trainser()
