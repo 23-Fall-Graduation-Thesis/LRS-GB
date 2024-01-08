@@ -7,7 +7,7 @@ from typing import *
 from utils import get_instance
 
 class SchedulerBase(ABC):
-    def __init__(self,  model, init_lr, instances: Dict[str, str]):
+    def __init__(self, model, init_lr, instances: Dict[str, str]):
         """부모 클래스를 초기화합니다.
 
         Args:

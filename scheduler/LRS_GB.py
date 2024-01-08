@@ -1,8 +1,13 @@
 from scheduler.SchedulerBase import SchedulerBase
+from typing import *
 
 class LRS_GB(SchedulerBase):
-    def __init__(self, optimizer):
-        self.optim = optimizer
-
-    # TODO : our methods, like AutoLR.py
-    # 여기 안에서 Clip, target weight varation 계산, lr 계산 등 진행
+    def __init__(self,  model, init_lr, instances: Dict[str, str], constraints: List[float]):
+        super().__init__(model, init_lr, instances)
+        self.constrains = constraints
+    
+    def adjust_lr(self, weva_table, lr_table, score, n_epoch):
+        pass
+    
+    def try_lr_update(self, weva_try, epoch, now_lr):
+        pass
