@@ -2,12 +2,14 @@ from Trainer.TrainerBase import TrainerBase
 from scheduler.AutoLR import AutoLR
 import copy, torch
 from datetime import datetime
+from utils.utils import compute_weight_variation
 
 class AutoLR_Trainer(TrainerBase):
-    def __init__(self, model, model_name, device, loaders, loggers, max_f, min_f):
+    def __init__(self, model, model_name, device, loaders, loggers, max_f, min_f, thr_score=0.94):
         super().__init__(model, model_name, device, loaders, loggers)
         self.max_f = max_f
         self.min_f = min_f
+        self.thr_score = thr_score
 
     def train_model(self, epochs, init_lr):
         start_time = datetime.now().strftime('%m-%d_%H%M%S')
@@ -18,7 +20,7 @@ class AutoLR_Trainer(TrainerBase):
         lr_success = []
         ntrial_success = []
 
-        lr_scheduler = AutoLR(self.model, self.model_name, init_lr, self.max_f, self.min_f)
+        lr_scheduler = AutoLR(self.model, self.model_name, init_lr, self.max_f, self.min_f, self.thr_score)
         self.optimizer = lr_scheduler.optimizer_binding(self.model, [init_lr])
         
         best = 99999999
@@ -43,9 +45,10 @@ class AutoLR_Trainer(TrainerBase):
 
             while Trial_error:
                 trial = trial + 1
-                model_try = copy.deepcopy(self.model)
-                optimizer_try = lr_scheduler.optimizer_binding(model_try, now_lr)
-                weva_try, train_loss, train_acc = self.train_1epoch(model_try, optimizer_try, lr_scheduler.layer_name_dict)
+                model_temp = copy.deepcopy(self.model)
+                optimizer_try = lr_scheduler.optimizer_binding(model_temp, now_lr)
+                train_loss, train_acc, model_try = self.train_1epoch(model_temp, optimizer_try)
+                weva_try = compute_weight_variation(model_temp, model_try, lr_scheduler.layer_name_dict)
                 Trial_error, score, now_lr = lr_scheduler.try_lr_update(weva_try, epoch, now_lr)
                 optimizer_try_lrs = lr_scheduler.get_lr(optimizer_try)
 

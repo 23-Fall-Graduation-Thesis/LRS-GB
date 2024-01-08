@@ -27,18 +27,22 @@ class ConditionBase(ABC):
 
 
 class AutoLRCondition(ConditionBase):
-    def __init__(self, thr_score):
+    def __init__(self):
+        pass
+        
+
+    def init(self, thr_score):
         super().__init__()
         self.thr_score = thr_score
 
 
     def check_condition(self, weva_try) :
         weva_idx = self.sigma_function(weva_try[:-1])
-        score = self.get_score(weva_idx)
+        score = round(self.get_score(weva_idx), 3)
         if score >= self.thr_score:
-            return True
+            return True, score
         else:
-            return False
+            return False, score
 
 
     def get_condition(self):
@@ -54,7 +58,11 @@ class AutoLRCondition(ConditionBase):
 
 # Trial1
 class LRSGBCondition(ConditionBase):
-    def __init__(self, thr_score, constraints):
+    def __init__(self):
+        pass
+    
+    
+    def init(self, thr_score, constraints):
         super().__init__()
         self.thr_score = thr_score
         self.constraints = constraints

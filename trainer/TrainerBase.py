@@ -80,8 +80,7 @@ class TrainerBase(ABC):
         
         return test_loss, test_acc
     
-    def train_1epoch(self, modelB, optimizer_try, layer_names_dict):
-        modelA = copy.deepcopy(modelB)
+    def train_1epoch(self, modelB, optimizer_try,):
         modelB = modelB.to(self.device)
 
         train_loss = 0.0
@@ -103,6 +102,5 @@ class TrainerBase(ABC):
         train_loss = train_loss / len(self.trainloader.dataset)
         train_acc = train_acc / len(self.trainloader.dataset) * 100
 
-        weva = compute_weight_variation(modelA, modelB, layer_names_dict)
 
-        return weva, train_loss, train_acc
+        return train_loss, train_acc, modelB

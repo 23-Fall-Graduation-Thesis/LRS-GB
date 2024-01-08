@@ -49,3 +49,10 @@ class LRSGBTargetLR(AutoLRTargetLR):
         target_init_lr.append(cls_lr)
         
         return target_init_lr
+    
+    
+    def select_lr(GB_update, target_lr, target_init_lr):
+        if GB_update :
+            return target_init_lr
+        else:
+            return target_lr

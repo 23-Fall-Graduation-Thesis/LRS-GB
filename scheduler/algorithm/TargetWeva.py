@@ -87,7 +87,7 @@ class LRSGBTargetWeva(AutoLRTargetWeva):
         self.constraints = constraints
 
     
-    def cal_target_init_weva(self, now_init_weva, n_epoch, constraints):
+    def cal_target_init_weva(self, now_init_weva, n_epoch):
         if n_epoch == 0:
             #TODO
             print('Maybe this is not happening...')
@@ -95,7 +95,7 @@ class LRSGBTargetWeva(AutoLRTargetWeva):
         else:
             target_init_weva = now_init_weva
             for i in range(len(now_init_weva)):
-                if now_init_weva[i] > constraints[i]:
-                    target_init_weva[i] = constraints[i]
+                if now_init_weva[i] > self.constraints[i]:
+                    target_init_weva[i] = self.constraints[i]
         
         return target_init_weva
