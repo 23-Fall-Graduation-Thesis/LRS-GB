@@ -61,33 +61,36 @@ class LRS_GB_Trainer(TrainerBase):
                 check_autoLR, check_GB, score  = lr_scheduler.try_lr_update(weva_try, init_weva_try)
                 
                 optimizer_try_lrs = lr_scheduler.get_lr(optimizer_try)
-                if not GB_update:
-                    if not check_autoLR :
-                        Auto_update = True
-                        weva_table.append(weva_try)
-                        lr_table.append(optimizer_try_lrs)
-                        now_lr = lr_scheduler.adjustLR(weva_table, init_weva_try, lr_table, epoch, GB_update=False)
+                
+                if not check_autoLR and not GB_update:
+                    Auto_update = True
+                    weva_table.append(weva_try)
+                    lr_table.append(optimizer_try_lrs)
+                    now_lr = lr_scheduler.adjustLR(weva_table, init_weva_try, lr_table, epoch, GB_update=False)
+                
+                else:
+                    weva_table.append(weva_try)
+                    if Auto_update:
+                        self.model = copy.deepcopy(model_try)
+                        self.optimizer = lr_scheduler.optimizer_binding(self.model, now_lr)
+                        weva_success.append(copy.deepcopy(weva_try))
+                        lr_success.append(optimizer_try_lrs)
+                        ntrial_success.append(trial)
                     
-                    else:
-                        if Auto_update:
-                            self.model = copy.deepcopy(model_try)
-                            self.optimizer = lr_scheduler.optimizer_binding(self.model, now_lr)
-                            weva_success.append(copy.deepcopy(weva_try))
-                            lr_success.append(optimizer_try_lrs)
-                            ntrial_success.append(trial)
-                        
-                        if not check_GB:
-                            GB_update = True
-                            init_weva_table.append(init_weva_try)
-                            lr_table.append(optimizer_try_lrs)
-                            now_lr = lr_scheduler.adjustLR(weva_table, init_weva_try, lr_table, epoch, GB_update=True)
-                        else :
-                            Trial_error = False
-                            self.model = copy.deepcopy(model_try)
-                            self.optimizer = lr_scheduler.optimizer_binding(self.model, now_lr)
-                            init_weva_success.append(copy.deepcopy(init_weva_try))
-                            lr_success.append(optimizer_try_lrs)
-                            ntrial_success.append(trial)
+                    if not check_GB:
+                        if not GB_update:
+                            lr_scheduler.weva_manager.reset_trial()
+                        GB_update = True
+                        init_weva_table.append(init_weva_try)
+                        lr_table.append(optimizer_try_lrs)
+                        now_lr = lr_scheduler.adjustLR(weva_table, init_weva_try, lr_table, epoch, GB_update=True)
+                    else :
+                        Trial_error = False
+                        self.model = copy.deepcopy(model_try)
+                        self.optimizer = lr_scheduler.optimizer_binding(self.model, now_lr)
+                        init_weva_success.append(copy.deepcopy(init_weva_try))
+                        lr_success.append(optimizer_try_lrs)
+                        ntrial_success.append(trial)
                 # if Trial_error == False :
                 #     # Success (score >= threshold score)
                 #     self.model = copy.deepcopy(model_try)
@@ -109,8 +112,17 @@ class LRS_GB_Trainer(TrainerBase):
                 values = []
                 for i in range(len(weva_try)-1):
                     values.append(weva_try[i])
-                epoLfmt = '    WeVa :' + epoLfmt
+                epoLfmt = '       WeVa :' + epoLfmt
                 print(epoLfmt.format(*values))
+
+                epoinitLfmt = ['{:.6f}']*(len(init_weva_try)-1)
+                epoinitLfmt =' '.join(epoinitLfmt)
+                values = []
+                for i in range(len(init_weva_try)-1):
+                    values.append(init_weva_try[i])
+                epoinitLfmt = '   InitWeVa :' + epoinitLfmt
+                print(epoinitLfmt.format(*values))
+
 
                 if Trial_error == True:
                     de_weva = lr_scheduler.target_weva_set[-1]
@@ -120,7 +132,7 @@ class LRS_GB_Trainer(TrainerBase):
                     values = []
                     for i in range(len(de_weva)):
                         values.append(de_weva[i])
-                    epoLfmt = ' desWeVa :' + epoLfmt
+                    epoLfmt = '    desWeVa :' + epoLfmt
                     print(epoLfmt.format(*values))
                     
                     epoinitLfmt = ['{:.6f}'] * len(de_init_weva)
@@ -128,7 +140,7 @@ class LRS_GB_Trainer(TrainerBase):
                     values = []
                     for i in range(len(de_init_weva)):
                         values.append(de_init_weva[i])
-                    epoinitLfmt = 'initWeVa :' + epoinitLfmt
+                    epoinitLfmt = 'desInitWeVa :' + epoinitLfmt
                     print(epoinitLfmt.format(*values))
 
                 epoLfmt = ['{:.6f}'] * (len(optimizer_try_lrs)-1)
@@ -136,14 +148,13 @@ class LRS_GB_Trainer(TrainerBase):
                 values = []
                 for i in range(len(optimizer_try_lrs)-1):
                     values.append(optimizer_try_lrs[i])
-                epoLfmt = '      LR :' + epoLfmt
+                epoLfmt = '         LR :' + epoLfmt
                 print(epoLfmt.format(*values))
                 print()
                 
 
             self.writer.add_scalar('Loss/train', train_loss, epoch)
             self.writer.add_scalar('Acc/train', train_acc, epoch)
-            lr_scheduler.weva_manager.reset_trial()
             
             if epoch % 5 == 0:
                 valid_loss, valid_acc = self.validation()

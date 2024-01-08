@@ -101,13 +101,13 @@ class LRSGBTargetWeva(AutoLRTargetWeva):
     def cal_target_init_weva(self, now_init_weva, n_epoch):
         if n_epoch == 0:
             #TODO:  
-            target_init_weva = now_init_weva
+            target_init_weva = now_init_weva[:]
             for i in range(len(self.constraints)):
                 if now_init_weva[i] > self.constraints[i]:
                     target_init_weva[i] = self.constraints[i] - self.trial * self.trial_effect
             self.trial += 1
         else:
-            target_init_weva = now_init_weva
+            target_init_weva = now_init_weva[:]
             for i in range(len(self.constraints)):
                 if now_init_weva[i] > self.constraints[i]:
                     target_init_weva[i] = self.constraints[i] - self.trial * self.trial_effect

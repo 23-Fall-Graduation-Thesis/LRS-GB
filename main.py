@@ -66,6 +66,7 @@ if __name__ == '__main__':
         reg = 1.3
         scale = 3.5
         constraints = [reg * (scale ** idx) for idx in range(num_layer)]
+        print(constraints)
         trainer = LRS_GB_Trainer(model, conf['model'], conf['device'], (trainloader, validloader, testloader), (checkpt, board_name, writer), conf['max_f'], conf['min_f'], constraints)
     else:
         pass

@@ -30,7 +30,6 @@ class LRS_GB(SchedulerBase):
         now_weva = weva_table[-1][:-1]
         now_lr = lr_table[-1][:-1]
         now_init_weva = now_init_weva[:-1] 
-        
         target_weva = self.weva_manager.cal_target_weva(weva_table, n_epoch)
         if not target_weva:
             target_weva = self.target_weva_set[-1]
