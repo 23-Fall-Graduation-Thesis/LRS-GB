@@ -12,6 +12,7 @@ class LRS_GB(SchedulerBase):
             )
         super().__init__(model, model_name, init_lr, instances)
         self.target_weva_set = []
+        self.target_init_weva_set = []
 
         self.scale = 1000000
         self.gamma = 0.2
@@ -29,6 +30,7 @@ class LRS_GB(SchedulerBase):
         now_weva = weva_table[-1][:-1]
         now_lr = lr_table[-1][:-1]
         
+        
         target_weva = self.weva_manager.cal_target_weva(weva_table, n_epoch)
         if not target_weva:
             target_weva = self.target_weva_set[-1]
@@ -36,6 +38,10 @@ class LRS_GB(SchedulerBase):
             self.target_weva_set.append(target_weva)
         
         target_init_weva = self.weva_manager.cal_target_init_weva(now_init_weva, n_epoch)
+        self.target_init_weva_set.append(target_init_weva)
+        
+        now_init_weva = now_init_weva[:-1]
+        target_init_weva = target_init_weva[:-1]
         
         target_lr = self.lr_manager.cal_target_lr(now_weva, now_lr, target_weva, self.cls_lr)
         target_init_lr = self.lr_manager.cal_target_init_lr(now_weva, now_lr, now_init_weva, target_init_weva, self.cls_lr)

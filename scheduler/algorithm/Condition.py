@@ -48,6 +48,10 @@ class AutoLRCondition(ConditionBase):
     def get_condition(self):
         return self.thr_score
 
+    
+    def adjust_condition(self):
+        pass
+    
 
     def get_score(self, A):
         diff = 0.
@@ -80,7 +84,11 @@ class LRSGBCondition(ConditionBase):
         if score < self.thr_score:
             check_autoLR = False
         
-        return check_autoLR, check_GB
+        return check_autoLR, check_GB, score
+    
+    
+    def adjust_condition(self):
+        pass
     
     
     def get_condition(self):

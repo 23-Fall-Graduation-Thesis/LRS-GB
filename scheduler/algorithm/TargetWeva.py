@@ -76,6 +76,10 @@ class AutoLRTargetWeva(TargetWevaBase):
         else:
             
             return False
+        
+        
+    def cal_target_init_weva(self, now_init_weva, n_epoch, constraints):
+        pass
 
 # Trial 1
 class LRSGBTargetWeva(AutoLRTargetWeva):
@@ -83,15 +87,19 @@ class LRSGBTargetWeva(AutoLRTargetWeva):
         pass
     
     def init(self, max_f, min_f, constraints):
-        super().__init__(max_f, min_f)
+        super().__init__()
+        super().init(max_f, min_f)
         self.constraints = constraints
 
     
     def cal_target_init_weva(self, now_init_weva, n_epoch):
+        #TODO: Trial 횟수 인자로 줘서 시도횟수 많아질수록 더 많이 bound에서 떨구기
         if n_epoch == 0:
-            #TODO
-            print('Maybe this is not happening...')
-            exit()
+            #TODO:  
+            target_init_weva = now_init_weva
+            for i in range(len(now_init_weva)):
+                if now_init_weva[i] > self.constraints[i]:
+                    target_init_weva[i] = self.constraints[i]
         else:
             target_init_weva = now_init_weva
             for i in range(len(now_init_weva)):

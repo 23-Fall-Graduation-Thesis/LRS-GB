@@ -1,10 +1,10 @@
 import torch.optim as optim
-from scheduler.algorithm.Condition import *
-from scheduler.algorithm.TargetLR import *
-from scheduler.algorithm.TargetWeva import * 
+from scheduler.algorithm.Condition import AutoLRCondition, LRSGBCondition
+from scheduler.algorithm.TargetLR import AutoLRTargetLR, LRSGBTargetLR
+from scheduler.algorithm.TargetWeva import AutoLRTargetWeva, LRSGBTargetWeva
 from abc import ABC, abstractmethod
 from typing import *
-from utils import get_instance
+from utils.utils import get_instance
 from utils.lr_utils import layer_block_info
 
 class SchedulerBase(ABC):
@@ -78,7 +78,7 @@ class SchedulerBase(ABC):
     
     
     @abstractmethod
-    def adjust_lr(self, weva_table, lr_table, n_epoch): 
+    def adjustLR(self, weva_table, lr_table, n_epoch): 
         """새로운 target_lr을 계산합니다.
 
         Args:

@@ -33,7 +33,14 @@ class AutoLRTargetLR(TargetLRBase):
         target_lr.append(cls_lr) # classifier lr 고정해서 사용
 
         return target_lr
+    
+    
+    def cal_target_init_lr(self):
+        pass
 
+
+    def select_lr(self):
+        pass
 
 # Trial 1
 class LRSGBTargetLR(AutoLRTargetLR):
@@ -44,14 +51,14 @@ class LRSGBTargetLR(AutoLRTargetLR):
     def cal_target_init_lr(self, now_weva, now_lr, now_init_weva, target_init_weva, cls_lr):
         target_init_lr = []
         for i in range(len(now_lr)):
-            target_init_lr[i] = ( now_lr[i] * (target_init_weva[i] - now_init_weva[i] + now_weva[i])) / now_weva[i]
+            target_init_lr.append( (now_lr[i] * (target_init_weva[i] - now_init_weva[i] + now_weva[i])) / now_weva[i])
 
         target_init_lr.append(cls_lr)
         
         return target_init_lr
     
     
-    def select_lr(GB_update, target_lr, target_init_lr):
+    def select_lr(self, GB_update, target_lr, target_init_lr):
         if GB_update :
             return target_init_lr
         else:

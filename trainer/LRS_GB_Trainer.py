@@ -3,9 +3,9 @@ from scheduler.LRS_GB import LRS_GB
 
 import copy, torch
 from datetime import datetime
-from utils.utils import compute_weight_variation
+from utils.lr_utils import compute_weight_variation
 
-class LSSGB_Trainer(TrainerBase):
+class LRS_GB_Trainer(TrainerBase):
     def __init__(self, model, model_name, device, loaders, loggers, max_f, min_f, constraints, thr_score=0.94):
         super().__init__(model, model_name, device, loaders, loggers)
         self.pretrain_model = copy.deepcopy(model) 
@@ -53,8 +53,9 @@ class LSSGB_Trainer(TrainerBase):
             while Trial_error:
                 trial = trial + 1
                 model_temp = copy.deepcopy(self.model)
-                optimizer_try = lr_scheduler.optimizer_binding(model_temp, now_lr)
-                train_loss, train_acc, model_try = self.train_1epoch(model_temp, optimizer_try)
+                model_try = copy.deepcopy(self.model)
+                optimizer_try = lr_scheduler.optimizer_binding(model_try, now_lr)
+                train_loss, train_acc, model_try = self.train_1epoch(model_try, optimizer_try)
                 weva_try = compute_weight_variation(model_temp, model_try, lr_scheduler.layer_name_dict)
                 init_weva_try = compute_weight_variation(self.pretrain_model, model_try, lr_scheduler.layer_name_dict)
                 check_autoLR, check_GB, score  = lr_scheduler.try_lr_update(weva_try, init_weva_try)
@@ -101,34 +102,44 @@ class LSSGB_Trainer(TrainerBase):
                 #     # now_lr.insert(0, now_lr[0]*self.conv1_factor) # for base_params (pruned layers) -> 우리는 base params 없다고 가정
 
 
-                print('trial: {}, score: {}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, score, train_loss, train_acc))
+                print('trial: {}, score: {}, check_GB: {}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, score, check_GB, train_loss, train_acc))
 
                 epoLfmt = ['{:.6f}']*(len(weva_try)-1)
                 epoLfmt =' '.join(epoLfmt)
                 values = []
                 for i in range(len(weva_try)-1):
                     values.append(weva_try[i])
-                epoLfmt = '   WeVa :' + epoLfmt
+                epoLfmt = '    WeVa :' + epoLfmt
                 print(epoLfmt.format(*values))
 
                 if Trial_error == True:
-                    de_weva = lr_scheduler.desired_weva_set[-1]
+                    de_weva = lr_scheduler.target_weva_set[-1]
+                    de_init_weva = lr_scheduler.target_init_weva_set[-1]
                     epoLfmt = ['{:.6f}'] * len(de_weva)
                     epoLfmt = ' '.join(epoLfmt)
                     values = []
                     for i in range(len(de_weva)):
                         values.append(de_weva[i])
-                    epoLfmt = 'desWeVa :' + epoLfmt
+                    epoLfmt = ' desWeVa :' + epoLfmt
                     print(epoLfmt.format(*values))
+                    
+                    epoinitLfmt = ['{:.6f}'] * len(de_init_weva)
+                    epoinitLfmt = ' '.join(epoinitLfmt)
+                    values = []
+                    for i in range(len(de_init_weva)):
+                        values.append(de_init_weva[i])
+                    epoinitLfmt = 'initWeVa :' + epoinitLfmt
+                    print(epoinitLfmt.format(*values))
 
                 epoLfmt = ['{:.6f}'] * (len(optimizer_try_lrs)-1)
                 epoLfmt = ' '.join(epoLfmt)
                 values = []
                 for i in range(len(optimizer_try_lrs)-1):
                     values.append(optimizer_try_lrs[i])
-                epoLfmt = '     LR :' + epoLfmt
+                epoLfmt = '      LR :' + epoLfmt
                 print(epoLfmt.format(*values))
                 print()
+                
 
             self.writer.add_scalar('Loss/train', train_loss, epoch)
             self.writer.add_scalar('Acc/train', train_acc, epoch)

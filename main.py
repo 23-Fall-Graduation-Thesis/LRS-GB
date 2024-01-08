@@ -6,8 +6,9 @@ from dataset_dir.datasets import datasetload
 
 from utils.utils import *
 from model.pretrained_models import select_model
-from Trainer.Standard_Trainer import Standard_Trainer
-from Trainer.AutoLR_Trainer import AutoLR_Trainer
+from trainer.Standard_Trainer import Standard_Trainer
+from trainer.AutoLR_Trainer import AutoLR_Trainer
+from trainer.LRS_GB_Trainer import LRS_GB_Trainer
 
 def arg_parse(parser):
     parser = argparse.ArgumentParser()
@@ -58,6 +59,9 @@ if __name__ == '__main__':
         trainer = Standard_Trainer(model, conf['model'], conf['device'], (trainloader, validloader, testloader), (checkpt, board_name, writer))
     elif conf['mode'] == 'auto':
         trainer = AutoLR_Trainer(model, conf['model'], conf['device'], (trainloader, validloader, testloader), (checkpt, board_name, writer), conf['max_f'], conf['min_f'])
+    elif conf['mode'] == 'GB':
+        constraint = [0.0001, 0.0015, 0.002, 0.003, 0.005, 0.006] #TODO 
+        trainer = LRS_GB_Trainer(model, conf['model'], conf['device'], (trainloader, validloader, testloader), (checkpt, board_name, writer), conf['max_f'], conf['min_f'], constraint)
     else:
         pass
         # trainer = Ours_Trainser()

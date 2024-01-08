@@ -1,8 +1,8 @@
-from Trainer.TrainerBase import TrainerBase
+from trainer.TrainerBase import TrainerBase
 from scheduler.AutoLR import AutoLR
 import copy, torch
 from datetime import datetime
-from utils.utils import compute_weight_variation
+from utils.lr_utils import compute_weight_variation
 
 class AutoLR_Trainer(TrainerBase):
     def __init__(self, model, model_name, device, loaders, loggers, max_f, min_f, thr_score=0.94):
@@ -46,8 +46,9 @@ class AutoLR_Trainer(TrainerBase):
             while Trial_error:
                 trial = trial + 1
                 model_temp = copy.deepcopy(self.model)
-                optimizer_try = lr_scheduler.optimizer_binding(model_temp, now_lr)
-                train_loss, train_acc, model_try = self.train_1epoch(model_temp, optimizer_try)
+                model_try = copy.deepcopy(self.model)
+                optimizer_try = lr_scheduler.optimizer_binding(model_try, now_lr)
+                train_loss, train_acc, model_try = self.train_1epoch(model_try, optimizer_try)
                 weva_try = compute_weight_variation(model_temp, model_try, lr_scheduler.layer_name_dict)
                 Trial_error, score, now_lr = lr_scheduler.try_lr_update(weva_try, epoch, now_lr)
                 optimizer_try_lrs = lr_scheduler.get_lr(optimizer_try)
@@ -77,7 +78,7 @@ class AutoLR_Trainer(TrainerBase):
                 print(epoLfmt.format(*values))
 
                 if Trial_error == True:
-                    de_weva = lr_scheduler.desired_weva_set[-1]
+                    de_weva = lr_scheduler.target_weva_set[-1]
                     epoLfmt = ['{:.6f}'] * len(de_weva)
                     epoLfmt = ' '.join(epoLfmt)
                     values = []

@@ -1,4 +1,4 @@
-from Trainer.TrainerBase import TrainerBase
+from trainer.TrainerBase import TrainerBase
 
 import torch
 from datetime import datetime
