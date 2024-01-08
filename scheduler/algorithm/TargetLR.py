@@ -50,7 +50,6 @@ class LRSGBTargetLR(AutoLRTargetLR):
 
     def cal_target_init_lr(self, now_weva, now_lr, now_init_weva, target_init_weva, cls_lr):
         target_init_lr = []
-        print(len(now_weva), len(now_lr), len(now_init_weva), len(target_init_weva))
         for i in range(len(now_lr)):
             temp = (now_lr[i] * (target_init_weva[i] - now_init_weva[i] + now_weva[i])) / now_weva[i]
             target_init_lr.append(temp)

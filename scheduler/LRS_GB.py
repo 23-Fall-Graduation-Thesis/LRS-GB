@@ -49,7 +49,6 @@ class LRS_GB(SchedulerBase):
     
     
     def try_lr_update(self, weva_try, init_weva_try):
-        print(len(weva_try), len(init_weva_try))
         check_autoLR, check_GB, score = self.condition_manager.check_condition(weva_try, init_weva_try)
         # if (check_autoLR and check_GB) or (GB_update and check_GB) :
         #     Trial_error = False
