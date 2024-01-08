@@ -4,7 +4,8 @@ import torch.optim as optim
 from utils.lr_utils import layer_block_info
 
 class AutoLR(SchedulerBase):
-    def __init__(self, model, model_name, init_lr, max_f, min_f):
+    def __init__(self, model, model_name, init_lr, max_f, min_f, instances):
+        super().__init__(model, model_name, init_lr, instances)
         self.max_f = max_f
         self.min_f = min_f
         self.desired_weva_set = []
@@ -19,23 +20,6 @@ class AutoLR(SchedulerBase):
 
         self.thr_score = 0.94
 
-        self.layer_name_list = layer_block_info(model_name)
-
-        self.get_model_layer_names()
-        self.optimizer_binding(model, [init_lr])
-
-    def get_model_layer_names(self):
-        # model layer names
-        self.layer_name_dict = dict()
-        for idx in range(len(self.layer_name_list)):
-            for layer_name in self.layer_name_list[idx]:
-                self.layer_name_dict[layer_name] = idx
-
-    def get_lr(self, optimizer):
-        lrs = []
-        for i in range(len(optimizer.param_groups)):
-            lrs.append(optimizer.param_groups[i]['lr'])
-        return lrs
 
     def adjustLR(self, weva_table, lr_table, score, n_epoch):
         # calculate new lr
@@ -87,7 +71,21 @@ class AutoLR(SchedulerBase):
 
         return adjust_lr
     
-    # AutoLR utils
+    
+    def try_lr_update(self, weva_try, epoch, now_lr):
+        score = round(self.isSort(weva_try), 3)
+        if score >= self.thr_score:
+            Trial_error = False
+            if epoch == self.e_drop - 1:
+                for i in range(len(now_lr)):
+                    now_lr[i] = now_lr[i] * self.gamma
+        else:
+            Trial_error = True
+        
+        return Trial_error, score, now_lr
+    
+    
+        # AutoLR utils
     def weva2index(self, weva):
         # weva = weva[1:-self.mlast]
         weva_index = [weva.index(x) for x in sorted(weva)]
@@ -103,48 +101,3 @@ class AutoLR(SchedulerBase):
         for index, element in enumerate(A):
             diff += abs(index - element)
         return 1.0 - diff / len(A) ** 2 * 2
-    
-    def optimizer_binding(self, model, now_lr):
-        # # TODO : add pruning options
-        # ignored_params = list(map(id, model.model.layer2.parameters())) + list(map(id, model.model.layer3.parameters())) + \
-        #                 list(map(id, model.model.layer4.parameters())) + list(map(id, model.model.fc.parameters())) \
-        #                 + list(map(id, model.classifier.parameters())) + list(map(id, model.model.layer1.parameters()))
-        # base_params = filter(lambda p: id(p) not in ignored_params, model.parameters())
-
-        if len(now_lr) == 1:
-            # TODO
-            now_lr *= len(self.layer_name_list)
-
-        param_list = []
-        for idx in range(len(self.layer_name_list)):
-            param = []
-            for layer_name in self.layer_name_list[idx]:
-                cur_layer = model
-                layer_name_split = layer_name.split(".")
-                for name in layer_name_split:
-                    if name.isdigit():
-                        # 정수로 변환하여 순차적으로 인덱스로 접근
-                        index = int(name)
-                        cur_layer = cur_layer[index]
-                    else:
-                        # 그 외의 경우에는 getattr 사용
-                        cur_layer = getattr(cur_layer, name)
-                param.extend(cur_layer.parameters())
-
-            param_list.append({'params': param, 'lr': now_lr[idx]})
-
-        optimizer_try = optim.SGD(param_list, momentum=0.9, weight_decay=5e-4, nesterov=True)  # for CUB
-
-        return optimizer_try
-    
-    def try_lr_update(self, weva_try, epoch, now_lr):
-        score = round(self.isSort(weva_try), 3)
-        if score >= self.thr_score:
-            Trial_error = False
-            if epoch == self.e_drop - 1:
-                for i in range(len(now_lr)):
-                    now_lr[i] = now_lr[i] * self.gamma
-        else:
-            Trial_error = True
-        
-        return Trial_error, score, now_lr

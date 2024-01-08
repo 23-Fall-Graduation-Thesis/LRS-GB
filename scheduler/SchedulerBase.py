@@ -5,9 +5,10 @@ from scheduler.algorithm.TargetWeva import *
 from abc import ABC, abstractmethod
 from typing import *
 from utils import get_instance
+from utils.lr_utils import layer_block_info
 
 class SchedulerBase(ABC):
-    def __init__(self, model, init_lr, instances: Dict[str, str]):
+    def __init__(self, model, model_name, init_lr, instances: Dict[str, str]):
         """부모 클래스를 초기화합니다.
 
         Args:
@@ -15,7 +16,8 @@ class SchedulerBase(ABC):
             init_lr (_type_): 초기 learning rate
             instances (Dict[str, str]): 알고리즘으로 사용할 방식들의 이름
         """
-        self.get_model_layer_names(model)
+        self.layer_name_list = layer_block_info(model_name)
+        self.get_model_layer_names()
         self.optimizer_binding(model, [init_lr])
         try :
             self.weva_manager = get_instance(instances["weva_method"])
@@ -25,18 +27,12 @@ class SchedulerBase(ABC):
             print(e)
     
     
-    def get_model_layer_names(self, model):
+    def get_model_layer_names(self):
         # model layer names
-        self.layer_names = dict()
-        for name, _ in model.named_parameters():
-            name_split = name.split(".")
-            layer_name = ".".join(name_split[:-1] if len(name_split)<3 else name_split[:2])
-            '''
-            alexnet : features.0, features.3, classifier.4 ..
-            resnet : layer1.1, layer2.0, fc ... (block)
-            '''
-            if layer_name not in self.layer_names:
-                self.layer_names[layer_name] = len(self.layer_names)
+        self.layer_name_dict = dict()
+        for idx in range(len(self.layer_name_list)):
+            for layer_name in self.layer_name_list[idx]:
+                self.layer_name_dict[layer_name] = idx
     
     
     def get_lr(self, optimizer):
@@ -48,36 +44,34 @@ class SchedulerBase(ABC):
 
 
     def optimizer_binding(self, model, now_lr):
-        # TODO : add pruning options
+        # # TODO : add pruning options
         # ignored_params = list(map(id, model.model.layer2.parameters())) + list(map(id, model.model.layer3.parameters())) + \
         #                 list(map(id, model.model.layer4.parameters())) + list(map(id, model.model.fc.parameters())) \
         #                 + list(map(id, model.classifier.parameters())) + list(map(id, model.model.layer1.parameters()))
         # base_params = filter(lambda p: id(p) not in ignored_params, model.parameters())
 
         if len(now_lr) == 1:
-            now_lr *= len(self.layer_names)
+            # TODO
+            now_lr *= len(self.layer_name_list)
 
         param_list = []
-        for layer_name in self.layer_names.keys():
-            current_layer = model
-            layer_name_split = layer_name.split(".")
-            for name in layer_name_split:
-                if name.isdigit():
-                    # 정수로 변환하여 순차적으로 인덱스로 접근
-                    index = int(name)
-                    current_layer = current_layer[index]
-                else:
-                    # 그 외의 경우에는 getattr 사용
-                    current_layer = getattr(current_layer, name)
-            param = current_layer.parameters()
+        for idx in range(len(self.layer_name_list)):
+            param = []
+            for layer_name in self.layer_name_list[idx]:
+                cur_layer = model
+                layer_name_split = layer_name.split(".")
+                for name in layer_name_split:
+                    if name.isdigit():
+                        # 정수로 변환하여 순차적으로 인덱스로 접근
+                        index = int(name)
+                        cur_layer = cur_layer[index]
+                    else:
+                        # 그 외의 경우에는 getattr 사용
+                        cur_layer = getattr(cur_layer, name)
+                param.extend(cur_layer.parameters())
 
-            param_list.append({'params': param, 'lr': now_lr[self.layer_names[layer_name]]})
+            param_list.append({'params': param, 'lr': now_lr[idx]})
 
-        # param_list = []
-        # for name, param in model.named_parameters():
-        #     layer_name = ".".join(name.split(".")[:-1])
-        #     # self.layer_names.add(layer_name)
-        #     param_list.append({'params': param, 'lr': now_lr[self.layer_names[layer_name]]})
         optimizer_try = optim.SGD(param_list, momentum=0.9, weight_decay=5e-4, nesterov=True)  # for CUB
 
         return optimizer_try
