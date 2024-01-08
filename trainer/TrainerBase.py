@@ -99,7 +99,6 @@ class TrainerBase(ABC):
             train_acc += pred.eq(target.view_as(pred)).sum().item()
             loss.backward()
             optimizer_try.step()
-            break
 
         train_loss = train_loss / len(self.trainloader.dataset)
         train_acc = train_acc / len(self.trainloader.dataset) * 100
