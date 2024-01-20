@@ -5,11 +5,10 @@ import numpy as np
 from dataset_dir.datasets import datasetload
 
 from utils.utils import *
-from utils.lr_utils import get_num_layer
 from model.pretrained_models import select_model
 from trainer.Standard_Trainer import Standard_Trainer
 from trainer.AutoLR_Trainer import AutoLR_Trainer
-from trainer.LRS_GB_Trainer import LRS_GB_Trainer
+from trainer.LRS_GB_Trainer import *
 
 def arg_parse(parser):
     parser = argparse.ArgumentParser()
@@ -30,8 +29,8 @@ def arg_parse(parser):
     parser.add_argument('--min_f', default=2, type=float, help='min_f for AutoLR')
     parser.add_argument('--thr_score', default=0.94, type=float, help='score threshold for AutoLR')
     parser.add_argument('--thr_init_score', default=0.94, type=float, help='score threshold for LRS')
-    parser.add_argument('--K', default=0.94, type=float, help='Lipschitz constant') # TODO: add head k
-    parser.add_argument('--scale_factor', default=0.94, type=float, help='layer-wise constraint scaling')
+    parser.add_argument('--K', default=7.80246991703043, type=float, help='Lipschitz constant') # TODO: add head k
+    parser.add_argument('--scale_factor', default=1.27679969876201, type=float, help='layer-wise constraint scaling')
     
 
     return parser.parse_args()
@@ -66,8 +65,7 @@ if __name__ == '__main__':
     elif conf['mode'] == 'auto':
         trainer = AutoLR_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, writer))
     elif conf['mode'] == 'GB':
-        num_layer = get_num_layer(conf['model'])
-        trainer = LRS_GB_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, writer))
+        trainer = LRS_GB_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, writer))
     else:
         pass
     

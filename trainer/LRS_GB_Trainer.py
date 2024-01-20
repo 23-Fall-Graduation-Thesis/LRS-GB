@@ -3,7 +3,7 @@ from scheduler.LRS_GB import LRS_GB, LRS_GB_Score
 
 import copy, torch
 from datetime import datetime
-from utils.lr_utils import compute_weight_variation, get_num_layer
+from utils.lr_utils import compute_weight_variation, get_num_layer, compute_weight_difference_and_variation
 
 class LRS_GB_Trainer(TrainerBase):
     def __init__(self, model, conf, loaders, loggers):
@@ -247,8 +247,8 @@ class LRS_GB_Score_Trainer(TrainerBase):
                 optimizer_try = lr_scheduler.optimizer_binding(model_try, now_lr)
                 train_loss, train_acc, model_try = self.train_1epoch(model_try, optimizer_try)
                 weva_try = compute_weight_variation(model_temp, model_try, lr_scheduler.layer_name_dict)
-                init_weva_try = compute_weight_variation(self.pretrain_model, model_try, lr_scheduler.layer_name_dict)
-                check_autoLR, check_GB, score  = lr_scheduler.try_lr_update(weva_try, init_weva_try)
+                init_weva_try, init_diff_try, param_num_list = compute_weight_difference_and_variation(self.pretrain_model, model_try, lr_scheduler.layer_name_dict)
+                check_autoLR, check_GB, score, init_score = lr_scheduler.try_lr_update(weva_try, init_weva_try)
                 
                 optimizer_try_lrs = lr_scheduler.get_lr(optimizer_try)
                 
@@ -256,7 +256,7 @@ class LRS_GB_Score_Trainer(TrainerBase):
                     Auto_update = True
                     weva_table.append(weva_try)
                     lr_table.append(optimizer_try_lrs)
-                    now_lr = lr_scheduler.adjustLR(weva_table, init_weva_try, lr_table, epoch, GB_update=False)
+                    now_lr = lr_scheduler.adjustLR(weva_table, init_weva_try, init_diff_try, lr_table, epoch, param_num_list, GB_update=False)
                 
                 else:
                     weva_table.append(weva_try)
@@ -273,7 +273,7 @@ class LRS_GB_Score_Trainer(TrainerBase):
                         GB_update = True
                         init_weva_table.append(init_weva_try)
                         lr_table.append(optimizer_try_lrs)
-                        now_lr = lr_scheduler.adjustLR(weva_table, init_weva_try, init_diff, lr_table, epoch, GB_update=True)
+                        now_lr = lr_scheduler.adjustLR(weva_table, init_weva_try, init_diff_try, lr_table, epoch, param_num_list, GB_update=True)
                     else :
                         Trial_error = False
                         self.model = copy.deepcopy(model_try)
@@ -295,14 +295,14 @@ class LRS_GB_Score_Trainer(TrainerBase):
                 #     # now_lr.insert(0, now_lr[0]*self.conv1_factor) # for base_params (pruned layers) -> 우리는 base params 없다고 가정
 
 
-                print('trial: {}, score: {}, check_GB: {}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, score, check_GB, train_loss, train_acc))
+                print('trial: {}, score: {}, init score: {}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, score, init_score, train_loss, train_acc))
 
                 epoLfmt = ['{:.6f}']*(len(weva_try)-1)
                 epoLfmt =' '.join(epoLfmt)
                 values = []
                 for i in range(len(weva_try)-1):
                     values.append(weva_try[i])
-                epoLfmt = '       WeVa :' + epoLfmt
+                epoLfmt = '       TryWeVa :' + epoLfmt
                 print(epoLfmt.format(*values))
 
                 epoinitLfmt = ['{:.6f}']*(len(init_weva_try)-1)
@@ -310,7 +310,7 @@ class LRS_GB_Score_Trainer(TrainerBase):
                 values = []
                 for i in range(len(init_weva_try)-1):
                     values.append(init_weva_try[i])
-                epoinitLfmt = '   InitWeVa :' + epoinitLfmt
+                epoinitLfmt = '   TryInitWeVa :' + epoinitLfmt
                 print(epoinitLfmt.format(*values))
 
 
@@ -322,7 +322,7 @@ class LRS_GB_Score_Trainer(TrainerBase):
                     values = []
                     for i in range(len(de_weva)):
                         values.append(de_weva[i])
-                    epoLfmt = '    desWeVa :' + epoLfmt
+                    epoLfmt = '    TargetWeVa :' + epoLfmt
                     print(epoLfmt.format(*values))
                     
                     epoinitLfmt = ['{:.6f}'] * len(de_init_weva)
@@ -330,7 +330,7 @@ class LRS_GB_Score_Trainer(TrainerBase):
                     values = []
                     for i in range(len(de_init_weva)):
                         values.append(de_init_weva[i])
-                    epoinitLfmt = 'desInitWeVa :' + epoinitLfmt
+                    epoinitLfmt = 'TargetInitWeVa :' + epoinitLfmt
                     print(epoinitLfmt.format(*values))
 
                 epoLfmt = ['{:.6f}'] * (len(optimizer_try_lrs)-1)
@@ -338,7 +338,7 @@ class LRS_GB_Score_Trainer(TrainerBase):
                 values = []
                 for i in range(len(optimizer_try_lrs)-1):
                     values.append(optimizer_try_lrs[i])
-                epoLfmt = '         LR :' + epoLfmt
+                epoLfmt = '  LearningRate :' + epoLfmt
                 print(epoLfmt.format(*values))
                 print()
                 

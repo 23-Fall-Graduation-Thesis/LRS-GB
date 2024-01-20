@@ -72,7 +72,7 @@ class LRS_GB_Score(SchedulerBase):
     def __init__(self, model, model_name, init_lr, max_f, min_f, thr_score, thr_init_score, K, scale_factor, instances: Dict[str, str] = None):
         if instances is None:
             instances = dict(
-                weva_method = "LRSRSLTargetWeva",# TODO:
+                weva_method = "LRSRSLTargetWeva",
                 lr_method = "LRSGBTargetLR",
                 condition_method = "LRSScoreCondition"
             )
@@ -92,7 +92,7 @@ class LRS_GB_Score(SchedulerBase):
         self.condition_manager.init(thr_score, thr_init_score)
 
     
-    def adjustLR(self, weva_table, now_init_weva, init_diff, lr_table, n_epoch, GB_update):
+    def adjustLR(self, weva_table, now_init_weva, init_diff, lr_table, n_epoch, param_num_list, GB_update):
         now_weva = weva_table[-1][:-1]
         now_lr = lr_table[-1][:-1]
         now_init_weva = now_init_weva[:-1] 
@@ -102,7 +102,7 @@ class LRS_GB_Score(SchedulerBase):
         else:
             self.target_weva_set.append(target_weva)
         
-        target_init_weva = self.weva_manager.cal_target_init_weva(init_diff, n_epoch)
+        target_init_weva = self.weva_manager.cal_target_init_weva(init_diff, param_num_list)
         self.target_init_weva_set.append(target_init_weva)
         
         target_lr = self.lr_manager.cal_target_lr(now_weva, now_lr, target_weva, self.cls_lr)
@@ -114,7 +114,7 @@ class LRS_GB_Score(SchedulerBase):
     
     
     def try_lr_update(self, weva_try, init_weva_try):
-        check_autoLR, check_GB, score = self.condition_manager.check_condition(weva_try, init_weva_try, self.target_init_weva_set[-1])
+        check_autoLR, check_GB, score, init_score = self.condition_manager.check_condition(weva_try, init_weva_try, self.target_init_weva_set)
         # if (check_autoLR and check_GB) or (GB_update and check_GB) :
         #     Trial_error = False
         #     if epoch == self.e_drop - 1:
@@ -123,7 +123,7 @@ class LRS_GB_Score(SchedulerBase):
         # else:
         #     Trial_error = True
         
-        return check_autoLR, check_GB, score 
+        return check_autoLR, check_GB, score, init_score
     
     
     def decay_lr(self, epoch, now_lr):

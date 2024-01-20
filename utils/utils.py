@@ -1,8 +1,8 @@
 import argparse, os, torch
 from torch.utils.tensorboard import SummaryWriter
-from scheduler.algorithm.Condition import AutoLRCondition, LRSGBCondition
-from scheduler.algorithm.TargetLR import AutoLRTargetLR, LRSGBTargetLR
-from scheduler.algorithm.TargetWeva import AutoLRTargetWeva, LRSGBTargetWeva
+from scheduler.algorithm.Condition import *
+from scheduler.algorithm.TargetLR import *
+from scheduler.algorithm.TargetWeva import *
 import torch.optim as optim
 import numpy as np
 
