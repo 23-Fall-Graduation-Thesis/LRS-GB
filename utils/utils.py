@@ -24,6 +24,7 @@ def set_loggers(conf):
         checkpt = f"./model/weight/pretrain/{conf['model']}/{conf['dataset']}_{setting}.pt"
         board_name = str(conf['model'])+"/"+str(conf['dataset'])+"_"+setting
         writer = SummaryWriter("./results/log/pretrain/"+board_name)
+        os.makedirs(f"./model/weight/pretrain/{conf['model']}", exist_ok=True)
         
         print('model:', conf['model'], ' dataset:', conf['dataset'], 'pretrain: ', conf['pretrain'])
     else:

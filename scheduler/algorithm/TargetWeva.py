@@ -114,3 +114,37 @@ class LRSGBTargetWeva(AutoLRTargetWeva):
             self.trial += 1
         
         return target_init_weva
+    
+# Trial 2
+class LRSRSLTargetWeva(AutoLRTargetWeva):
+    def __init__(self):
+        pass
+    
+    def init(self, max_f, min_f, K, scale_factor):
+        super().__init__()
+        super().init(max_f, min_f)
+        self.K = K
+        self.trial = 0
+        self.scale_factor = scale_factor
+
+    
+    def reset_trial(self):
+        self.trial = 0
+    
+    
+    def cal_target_init_weva(self, now_init_weva, n_epoch):
+        if n_epoch == 0:
+            #TODO:  
+            target_init_weva = now_init_weva[:]
+            for i in range(len(self.constraints)):
+                if now_init_weva[i] > self.constraints[i]:
+                    target_init_weva[i] = self.constraints[i] - self.trial * self.trial_effect
+            self.trial += 1
+        else:
+            target_init_weva = now_init_weva[:]
+            for i in range(len(self.constraints)):
+                if now_init_weva[i] > self.constraints[i]:
+                    target_init_weva[i] = self.constraints[i] - self.trial * self.trial_effect
+            self.trial += 1
+        
+        return target_init_weva

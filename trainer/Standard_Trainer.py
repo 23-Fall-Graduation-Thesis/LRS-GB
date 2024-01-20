@@ -5,8 +5,8 @@ from datetime import datetime
 import torch.nn as nn
 
 class Standard_Trainer(TrainerBase):
-    def __init__(self, model, model_name, device, loaders, loggers):
-        super().__init__(self, model, model_name, device, loaders, loggers)
+    def __init__(self, model, conf, loaders, loggers):
+        super().__init__(self, model, conf['model'], conf['device'], loaders, loggers)
 
     def train_model(self, epochs, init_lr):
         # loss, optimizer define
