@@ -202,6 +202,7 @@ class LRS_GB_Score_Trainer(TrainerBase):
         self.thr_init_score = conf['thr_init_score']
         self.K = conf['K']
         self.scale_factor = conf['scale_factor']
+        self.max_trial = conf['max_trial']
 
 
     def train_model(self, epochs, init_lr):
@@ -232,6 +233,9 @@ class LRS_GB_Score_Trainer(TrainerBase):
             Trial_error = True
             Auto_update = False
             GB_update = False   # if GB considerate, then directly update.
+
+            GB_best_score = 0.0
+            GB_best_lr = None
             
             trial = 0
             init_weva_table = []
@@ -239,10 +243,10 @@ class LRS_GB_Score_Trainer(TrainerBase):
             lr_table = []
 
             now_lr = lr_scheduler.get_lr(self.optimizer)
+            model_temp = copy.deepcopy(self.model)
 
             while Trial_error:
                 trial = trial + 1
-                model_temp = copy.deepcopy(self.model)
                 model_try = copy.deepcopy(self.model)
                 optimizer_try = lr_scheduler.optimizer_binding(model_try, now_lr)
                 train_loss, train_acc, model_try = self.train_1epoch(model_try, optimizer_try)
@@ -252,50 +256,77 @@ class LRS_GB_Score_Trainer(TrainerBase):
                 
                 optimizer_try_lrs = lr_scheduler.get_lr(optimizer_try)
                 
-                if not check_autoLR and not GB_update:
-                    Auto_update = True
+                # if not check_autoLR and not GB_update:
+                #     Auto_update = True
+                #     weva_table.append(weva_try)
+                #     lr_table.append(optimizer_try_lrs)
+                #     now_lr = lr_scheduler.adjustLR(weva_table, init_weva_try, init_diff_try, lr_table, epoch, param_num_list, GB_update=False)
+                # else:
+                #     weva_table.append(weva_try)
+                #     if Auto_update:
+                #         self.model = copy.deepcopy(model_try)
+                #         self.optimizer = lr_scheduler.optimizer_binding(self.model, now_lr)
+                        # weva_success.append(copy.deepcopy(weva_try))
+                        # lr_success.append(optimizer_try_lrs)
+                        # ntrial_success.append(trial)
+                    
+                #     if not check_GB:
+                #         lr_scheduler.weva_manager.trial += 1
+                #         if not GB_update:
+                #             lr_scheduler.weva_manager.reset_trial()
+                #         GB_update = True
+                #         init_weva_table.append(init_weva_try)
+                #         lr_table.append(optimizer_try_lrs)
+                #         now_lr = lr_scheduler.adjustLR(weva_table, init_weva_try, init_diff_try, lr_table, epoch, param_num_list, GB_update=True)
+                #     else:
+                #         Trial_error = False
+                #         self.model = copy.deepcopy(model_try)
+                #         self.optimizer = lr_scheduler.optimizer_binding(self.model, now_lr)
+                #         init_weva_success.append(copy.deepcopy(init_weva_try))
+                #         lr_success.append(optimizer_try_lrs)
+                #         ntrial_success.append(trial)
+
+                if not check_autoLR and not Auto_update:
+                    # AutoLR update
                     weva_table.append(weva_try)
                     lr_table.append(optimizer_try_lrs)
                     now_lr = lr_scheduler.adjustLR(weva_table, init_weva_try, init_diff_try, lr_table, epoch, param_num_list, GB_update=False)
-                
+                    lr_scheduler.weva_manager.reset_trial()
                 else:
                     weva_table.append(weva_try)
-                    if Auto_update:
+                    if not Auto_update:
+                        # finish autoLR update, start GB update
+                        Auto_update = True
                         self.model = copy.deepcopy(model_try)
                         self.optimizer = lr_scheduler.optimizer_binding(self.model, now_lr)
+                        GB_best_score = init_score
+                        GB_best_lr = now_lr
                         weva_success.append(copy.deepcopy(weva_try))
                         lr_success.append(optimizer_try_lrs)
                         ntrial_success.append(trial)
-                    
-                    if not check_GB:
-                        if not GB_update:
-                            lr_scheduler.weva_manager.reset_trial()
-                        GB_update = True
-                        init_weva_table.append(init_weva_try)
-                        lr_table.append(optimizer_try_lrs)
-                        now_lr = lr_scheduler.adjustLR(weva_table, init_weva_try, init_diff_try, lr_table, epoch, param_num_list, GB_update=True)
-                    else :
-                        Trial_error = False
-                        self.model = copy.deepcopy(model_try)
-                        self.optimizer = lr_scheduler.optimizer_binding(self.model, now_lr)
-                        init_weva_success.append(copy.deepcopy(init_weva_try))
-                        lr_success.append(optimizer_try_lrs)
-                        ntrial_success.append(trial)
-                # if Trial_error == False :
-                #     # Success (score >= threshold score)
-                #     self.model = copy.deepcopy(model_try)
-                #     self.optimizer = lr_scheduler.optimizer_binding(self.model, now_lr)
-                #     weva_success.append(copy.deepcopy(weva_try))
-                #     lr_success.append(optimizer_try_lrs)
-                #     ntrial_success.append(trial)
-                # else:
-                #     weva_table.append(weva_try)
-                #     lr_table.append(optimizer_try_lrs)
-                #     now_lr = lr_scheduler.adjustLR(weva_table, lr_table, epoch)
-                #     # now_lr.insert(0, now_lr[0]*self.conv1_factor) # for base_params (pruned layers) -> 우리는 base params 없다고 가정
+                        lr_scheduler.weva_manager.reset_trial()
+                        print("now GB update")
+                    else:
+                        # GB update
+                        if not check_GB:
+                            if GB_best_score < init_score:
+                                GB_best_score = init_score
+                                GB_best_lr = now_lr
+                            init_weva_table.append(init_weva_try)
+                            lr_table.append(optimizer_try_lrs)
+                            now_lr = lr_scheduler.adjustLR(weva_table, init_weva_try, init_diff_try, lr_table, epoch, param_num_list, GB_update=True)
+                            
+                            if lr_scheduler.weva_manager.trial >= self.max_trial:
+                                GB_update = True
+                        if check_GB or GB_update: 
+                            Trial_error = False
+                            self.model = copy.deepcopy(model_try)
+                            self.optimizer = lr_scheduler.optimizer_binding(self.model, GB_best_lr)
+                            init_weva_success.append(copy.deepcopy(init_weva_try))
+                            lr_success.append(optimizer_try_lrs)
+                            ntrial_success.append(trial) 
 
-
-                print('trial: {}, score: {}, init score: {}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, score, init_score, train_loss, train_acc))
+                print('trial: {}, GB trial: {}, score: {:.4f}, init score: {:.4f}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, lr_scheduler.weva_manager.trial, score, init_score, train_loss, train_acc))
 
                 epoLfmt = ['{:.6f}']*(len(weva_try)-1)
                 epoLfmt =' '.join(epoLfmt)
