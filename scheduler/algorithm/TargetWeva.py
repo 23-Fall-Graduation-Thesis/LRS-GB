@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+import torch
+from utils.lr_utils import get_size_scalar, diff_to_weva, get_frob_norm, get_lone_norm, get_linf_norm
 
 class TargetWevaBase(ABC):
     def __init__(self):
@@ -116,4 +118,36 @@ class LRSGBTargetWeva(AutoLRTargetWeva):
                     target_init_weva[i] = self.constraints[i] - self.trial * self.trial_effect
             self.trial += 1
         
+        return target_init_weva
+    
+# Trial 2
+class LRSRSLTargetWeva(AutoLRTargetWeva):
+    def __init__(self):
+        pass
+    
+    def init(self, max_f, min_f, K, scale_factor):
+        super().__init__()
+        super().init(max_f, min_f)
+        self.trial = 0
+        self.K = K
+        self.scale_factor = scale_factor
+
+    def reset_trial(self):
+        self.trial = 0
+    
+    #NOTE: 모든 WEIGHT 수정
+    def cal_target_init_weva(self, weight_difference, param_num_list):
+        target_init_weva = []
+        #print(len(weight_difference), len(param_num_list))
+        for i, diff_list in enumerate(weight_difference[:-1]):
+            target_temp = []
+            #print("diff len", len(diff_list))
+            for diff in diff_list:
+                norms = get_lone_norm(diff)
+                K = self.K * pow(self.scale_factor, int(i/2))
+                target_temp.append(diff * (1.0 / torch.maximum(torch.tensor(1.0, device=norms.device), norms / K)))
+            n = param_num_list[i]
+            target_init_weva.append(diff_to_weva(target_temp, n))
+        self.trial += 1
+        #print("result: ", len(target_init_weva))
         return target_init_weva

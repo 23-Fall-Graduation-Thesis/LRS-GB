@@ -13,7 +13,7 @@ class AutoLR(SchedulerBase):
 
         self.scale = 1000000
         self.gamma = 0.2
-        self.cls_lr = 0.01
+        self.cls_lr = 0.001
 
         self.e_drop = 40
         self.e_end = 50

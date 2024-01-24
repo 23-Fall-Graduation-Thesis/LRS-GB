@@ -1,8 +1,8 @@
 import argparse, os, torch
 from torch.utils.tensorboard import SummaryWriter
-from scheduler.algorithm.Condition import AutoLRCondition, LRSGBCondition
-from scheduler.algorithm.TargetLR import AutoLRTargetLR, LRSGBTargetLR
-from scheduler.algorithm.TargetWeva import AutoLRTargetWeva, LRSGBTargetWeva
+from scheduler.algorithm.Condition import *
+from scheduler.algorithm.TargetLR import *
+from scheduler.algorithm.TargetWeva import *
 import torch.optim as optim
 import numpy as np
 
@@ -24,6 +24,7 @@ def set_loggers(conf):
         checkpt = f"./model/weight/pretrain/{conf['model']}/{conf['dataset']}_{setting}.pt"
         board_name = str(conf['model'])+"/"+str(conf['dataset'])+"_"+setting
         writer = SummaryWriter("./results/log/pretrain/"+board_name)
+        os.makedirs(f"./model/weight/pretrain/{conf['model']}", exist_ok=True)
         
         print('model:', conf['model'], ' dataset:', conf['dataset'], 'pretrain: ', conf['pretrain'])
     else:

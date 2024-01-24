@@ -5,11 +5,11 @@ from datetime import datetime
 from utils.lr_utils import compute_weight_variation
 
 class AutoLR_Trainer(TrainerBase):
-    def __init__(self, model, model_name, device, loaders, loggers, max_f, min_f, thr_score=0.94):
-        super().__init__(model, model_name, device, loaders, loggers)
-        self.max_f = max_f
-        self.min_f = min_f
-        self.thr_score = thr_score
+    def __init__(self, model, conf, loaders, loggers):
+        super().__init__(model, conf['model'], conf['device'], loaders, loggers)
+        self.max_f = conf['max_f']
+        self.min_f = conf['min_f']
+        self.thr_score = conf['thr_score']
 
     def train_model(self, epochs, init_lr):
         start_time = datetime.now().strftime('%m-%d_%H%M%S')
