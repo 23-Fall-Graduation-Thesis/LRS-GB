@@ -47,14 +47,17 @@ class AutoLRTargetWeva(TargetWevaBase):
         now_weva = weva_table[-1][:-1]
         if len(weva_table) <= 1:
             # Here we make desired weight variation(weva)
+            
+            # interval -> d_t of AutoLR algorithm
             max_weva = max(now_weva)
             min_weva = min(now_weva)
             if n_epoch == 0: 
                 max_weva = max(now_weva)*self.max_f
                 min_weva = min(now_weva)*self.min_f
             print('Bound condition of weigh variation are Max: {:.6f} Min: {:.6f}'.format(max_weva, min_weva))
-            interval = (max_weva - min_weva) / (len(now_weva) - 1) # d_t
+            interval = (max_weva - min_weva) / (len(now_weva) - 1)
 
+            # Eq. 12, 13, 14 of AutoLR algorithm
             if n_epoch == 0:
                 # v_bar_t가 없는 경우, epoch 0
                 bias = min_weva

@@ -10,8 +10,8 @@ def compute_weight_variation(modelA, modelB, layer_name_dict):
     L1_variation = [[0, 0] for _ in range(max(layer_name_dict.values())+1)]
 
     for (layer_name, paramA), (_, paramB) in zip(modelA.named_parameters(), modelB.named_parameters()):
-        curA = modelA
-        curB = modelB
+        curA = modelA # model_temp
+        curB = modelB # model_try
         layer_name_splited = layer_name.split('.')[:-1] # .weight, .bias 제거 (이름만 확인)
         for idx, name in enumerate(layer_name_splited):
             if name.isdigit():

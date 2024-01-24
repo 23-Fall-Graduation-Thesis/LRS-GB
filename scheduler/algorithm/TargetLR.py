@@ -20,7 +20,7 @@ class AutoLRTargetLR(TargetLRBase):
     def __init__(self):
         super().__init__()
 
-
+    # calculate target lr based target weight variance
     def cal_target_lr(self, now_weva, now_lr, target_weva, cls_lr):
         target_lr = now_weva[:]
         Gvalue = []

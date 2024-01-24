@@ -17,7 +17,7 @@ class LRS_GB_Trainer(TrainerBase):
     def train_model(self, epochs, init_lr):
         start_time = datetime.now().strftime('%m-%d_%H%M%S')
         print('\nStart training at', start_time)
-    
+
         self.model.train()
         init_weva_success = []
         weva_success = []
@@ -48,18 +48,31 @@ class LRS_GB_Trainer(TrainerBase):
             weva_table = []
             lr_table = []
 
+            # current learning rate
             now_lr = lr_scheduler.get_lr(self.optimizer)
 
+            # repeat until condition is satisfied
             while Trial_error:
                 trial = trial + 1
                 model_temp = copy.deepcopy(self.model)
                 model_try = copy.deepcopy(self.model)
+                
+                # setting optimizer with splited layer-wise learning rate
                 optimizer_try = lr_scheduler.optimizer_binding(model_try, now_lr)
+                
+                # try 1 epoch training
                 train_loss, train_acc, model_try = self.train_1epoch(model_try, optimizer_try)
+                
+                # calculate weight variance using current model & tried model
                 weva_try = compute_weight_variation(model_temp, model_try, lr_scheduler.layer_name_dict)
+                
+                # calculate init weight variance using pretrained model & tried model
                 init_weva_try = compute_weight_variation(self.pretrain_model, model_try, lr_scheduler.layer_name_dict)
+                
+                # check autoLR & GB condition, get sorting quality 
                 check_autoLR, check_GB, score  = lr_scheduler.try_lr_update(weva_try, init_weva_try)
                 
+                # get tried optimizer
                 optimizer_try_lrs = lr_scheduler.get_lr(optimizer_try)
                 
                 if not check_autoLR and not GB_update:

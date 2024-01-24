@@ -20,6 +20,7 @@ class AutoLR_Trainer(TrainerBase):
         lr_success = []
         ntrial_success = []
 
+        # setting scheduler & optimizer
         lr_scheduler = AutoLR(self.model, self.model_name, init_lr, self.max_f, self.min_f, self.thr_score)
         self.optimizer = lr_scheduler.optimizer_binding(self.model, [init_lr])
         
@@ -41,20 +42,31 @@ class AutoLR_Trainer(TrainerBase):
             weva_table = []
             lr_table = []
 
+            # current learning rate
             now_lr = lr_scheduler.get_lr(self.optimizer)
 
+            # repeat until condition is satisfied
             while Trial_error:
                 trial = trial + 1
                 model_temp = copy.deepcopy(self.model)
                 model_try = copy.deepcopy(self.model)
+                
+                # setting optimizer with splited layer-wise learning rate
                 optimizer_try = lr_scheduler.optimizer_binding(model_try, now_lr)
+                
+                # try 1 epoch training
                 train_loss, train_acc, model_try = self.train_1epoch(model_try, optimizer_try)
+                
+                # calculate weight variance using current model & tried model
                 weva_try = compute_weight_variation(model_temp, model_try, lr_scheduler.layer_name_dict)
+                
+                # check trial condition and update current lr & get tried optimizer
                 Trial_error, score, now_lr = lr_scheduler.try_lr_update(weva_try, epoch, now_lr)
                 optimizer_try_lrs = lr_scheduler.get_lr(optimizer_try)
 
+                # Success (score >= threshold score)
                 if Trial_error == False:
-                    # Success (score >= threshold score)
+                    # update tried model & optimizer
                     self.model = copy.deepcopy(model_try)
                     self.optimizer = lr_scheduler.optimizer_binding(self.model, now_lr)
                     weva_success.append(copy.deepcopy(weva_try))
@@ -63,12 +75,15 @@ class AutoLR_Trainer(TrainerBase):
                 else:
                     weva_table.append(weva_try)
                     lr_table.append(optimizer_try_lrs)
+                    
+                    # update learning rate using AutoLR algorithm
                     now_lr = lr_scheduler.adjustLR(weva_table, lr_table, epoch)
                     # now_lr.insert(0, now_lr[0]*self.conv1_factor) # for base_params (pruned layers) -> 우리는 base params 없다고 가정
 
 
                 print('trial: {}, score: {}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, score, train_loss, train_acc))
 
+                # What is this?????????
                 epoLfmt = ['{:.6f}']*(len(weva_try)-1)
                 epoLfmt =' '.join(epoLfmt)
                 values = []

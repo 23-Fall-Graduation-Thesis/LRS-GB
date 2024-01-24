@@ -27,18 +27,21 @@ class AutoLR(SchedulerBase):
         now_weva = weva_table[-1][:-1]
         now_lr = lr_table[-1][:-1]
         
+        # calculate target weight variance
         target_weva = self.weva_manager.cal_target_weva(weva_table, n_epoch)
         if not target_weva:
             target_weva = self.target_weva_set[-1]
         else:
             self.target_weva_set.append(target_weva)
         
+        # calculate learning rate based target weight variance
         target_lr = self.lr_manager.cal_target_lr(now_weva, now_lr, target_weva, self.cls_lr)
         
         return target_lr
     
     
     def try_lr_update(self, weva_try, epoch, now_lr):
+        # if threshold condition is satisfied, then stop next trial
         check, score = self.condition_manager.check_condition(weva_try)
         if check:
             Trial_error = False
