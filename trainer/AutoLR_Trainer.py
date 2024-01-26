@@ -83,7 +83,7 @@ class AutoLR_Trainer(TrainerBase):
 
                 print('trial: {}, score: {}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, score, train_loss, train_acc))
 
-                # What is this?????????
+                # print current states
                 epoLfmt = ['{:.6f}']*(len(weva_try)-1)
                 epoLfmt =' '.join(epoLfmt)
                 values = []

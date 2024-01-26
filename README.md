@@ -49,3 +49,8 @@ python main.py --pretrain=False [Fine-tuning Options] [Common Options]
 |`--model_path`|**str type**|`''`|path of pretrained model, <br> if `''`, use ImageNet provided by torchvision|
 |`--max_f`|**int type**|`0.4`|hyperparameter for AutoLR|
 |`--min_f`|**int type**|`2`|hyperparameter for AutoLR|
+|`--thr_score`|**float type**|`0.94`|score threshold for AutoLR|
+|`--thr_init_score`|**float type**|`0.9`|score threshold for LRS-GB|
+|`--K`|**float type**|`7.80246`|Lipschitz constant|
+|`--scale_factor`|**float type**|`1.27679`|layer-wise constraint scaling|
+|`--max_trial`|**int type**|`10`|trial maximum for GB lr update|
