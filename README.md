@@ -26,7 +26,7 @@ python main.py [Common Options]
 |Common Options|Arguments|Default|Description|
 |-------|---------|-------|-----------|
 |`--dataset`|`cifar10`, `cifar100`, `svhn`, `cub`|`cifar10`|dataset to use for learning|
-|`--model`|`Conv4`, `resnet18`, `resnet34`,<br> `resnet50`, `resnet101`, `resnet152`,<br> `alexnet`, `vgg16`, `vgg19`, `WRN50`, `WRN101`|`alexnet`| CNN Model Architecture to use for learning|
+|`--model`|`Conv4`, `resnet18`, `resnet34`,<br> `resnet50`, `resnet101`, `resnet152`,<br> `alexnet`, `vgg16`, `vgg19`, `WRN50`, `WRN101`|`resnet18`| CNN Model Architecture to use for learning|
 |`--batch_size`|**int type**|`64`|size of mini-batch size|
 |`--epoch`|**int type**|`50`|Training epochs|
 |`--lr`|**float type**|`0.001`|(initial) learning rate|
@@ -47,10 +47,10 @@ python main.py --pretrain=False [Fine-tuning Options] [Common Options]
 |-------|---------|-------|-----------|
 |`--mode`|`standard`, `auto`, `ours`|`standard`|Fine-tuning mode to use, Standard(standard), AutoLR(auto), Our new method(ours)|
 |`--model_path`|**str type**|`''`|path of pretrained model, <br> if `''`, use ImageNet provided by torchvision|
-|`--max_f`|**int type**|`0.4`|hyperparameter for AutoLR|
-|`--min_f`|**int type**|`2`|hyperparameter for AutoLR|
+|`--max_f`|**float type**|`0.05`|hyperparameter for AutoLR|
+|`--min_f`|**float type**|`1.0`|hyperparameter for AutoLR|
 |`--thr_score`|**float type**|`0.94`|score threshold for AutoLR|
-|`--thr_init_score`|**float type**|`0.9`|score threshold for LRS-GB|
+|`--thr_init_score`|**float type**|`0.8`|score threshold for LRS-GB|
 |`--K`|**float type**|`7.80246`|Lipschitz constant|
 |`--scale_factor`|**float type**|`1.27679`|layer-wise constraint scaling|
-|`--max_trial`|**int type**|`10`|trial maximum for GB lr update|
+|`--max_trial`|**int type**|`20`|trial maximum for GB lr update|
