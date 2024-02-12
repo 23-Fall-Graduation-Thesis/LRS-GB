@@ -231,7 +231,7 @@ class LRS_GB_Score_Trainer(TrainerBase):
         lr_scheduler = LRS_GB_Score(self.model, self.model_name, init_lr, self.max_f, self.min_f, self.thr_score, self.thr_init_score, self.K, self.scale_factor) #TODO instance arg_parser
         self.optimizer = lr_scheduler.optimizer_binding(self.model, [init_lr])
         
-        best = 99999999
+        best = 0
         best_epoch = 0
         bad_count = 0
         strict = False

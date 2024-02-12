@@ -11,7 +11,7 @@ class Standard_Trainer(TrainerBase):
     def train_model(self, epochs, init_lr):
         # loss, optimizer define
         self.optimizer = torch.optim.SGD(self.model.parameters(), lr=init_lr)
-        self.writer = SummaryWriter(f"./results/log{self.board_name}")
+        self.writer = SummaryWriter(f"./results/log/{self.board_name}")
         
         start_time = datetime.now().strftime('%m-%d_%H%M%S')
         print('\nStart training at', start_time)

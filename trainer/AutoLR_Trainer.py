@@ -28,7 +28,7 @@ class AutoLR_Trainer(TrainerBase):
         lr_scheduler = AutoLR(self.model, self.model_name, init_lr, self.max_f, self.min_f, self.thr_score)
         self.optimizer = lr_scheduler.optimizer_binding(self.model, [init_lr])
         
-        best = 99999999
+        best = 0
         best_epoch = 0
         bad_count = 0
         strict = False
@@ -52,6 +52,8 @@ class AutoLR_Trainer(TrainerBase):
             # repeat until condition is satisfied
             while Trial_error:
                 trial = trial + 1
+                if trial>100:
+                    Trial_error = False
                 model_temp = copy.deepcopy(self.model)
                 model_try = copy.deepcopy(self.model)
                 

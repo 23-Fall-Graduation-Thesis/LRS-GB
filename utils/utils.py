@@ -35,7 +35,7 @@ def set_loggers(conf):
             setting = f"max{round(conf['max_f'],3)}_min{round(conf['min_f'],3)}"
 
         os.makedirs(f"./model/weight/{conf['mode']}/{conf['model']}", exist_ok=True)
-        checkpt = f"./model/weight/{conf['mode']}/{conf['model']}/{conf['dataset']}_{setting}.pt"
+        checkpt = f"./model/weight/{conf['mode']}/{conf['model']}/{conf['dataset']}_{log_time}.pt"
         board_name = f"{conf['mode']}/{conf['model']}/{conf['dataset']}_{setting}"
 
         print('model:', conf['model'], ' dataset:', conf['dataset'], 'fine-tuning mode:', conf['mode'])

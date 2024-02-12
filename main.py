@@ -14,7 +14,7 @@ def arg_parse(parser):
     parser = argparse.ArgumentParser()
     # Common Options
     parser.add_argument('--dataset', default='cifar10', help='Dataset type')
-    parser.add_argument('--model', default='alexnet', help='Model type')
+    parser.add_argument('--model', default='resnet18', help='Model type')
     parser.add_argument('--batch_size', type=int, default=64, help='batch size')
     parser.add_argument('--epoch', type=int, default=50, help='Epoch')
     parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
@@ -28,7 +28,7 @@ def arg_parse(parser):
     parser.add_argument('--max_f', default=0.05, type=float, help='max_f for AutoLR')
     parser.add_argument('--min_f', default=1.0, type=float, help='min_f for AutoLR')
     parser.add_argument('--thr_score', default=0.94, type=float, help='score threshold for AutoLR')
-    parser.add_argument('--thr_init_score', default=0.7, type=float, help='score threshold for LRS')
+    parser.add_argument('--thr_init_score', default=0.8, type=float, help='score threshold for LRS')
     parser.add_argument('--K', default=7.80246991703043, type=float, help='Lipschitz constant') # TODO: add head k
     parser.add_argument('--scale_factor', default=1.27679969876201, type=float, help='layer-wise constraint scaling')
     parser.add_argument('--max_trial', default=20, type=int, help='trial maximum for GB lr update')
