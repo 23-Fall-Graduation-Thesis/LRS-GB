@@ -1,7 +1,8 @@
 from trainer.TrainerBase import TrainerBase
 from scheduler.AutoLR import AutoLR
-import copy, torch
+import copy, torch, math, csv
 from datetime import datetime
+from torch.utils.tensorboard import SummaryWriter
 from utils.lr_utils import compute_weight_variation
 
 class AutoLR_Trainer(TrainerBase):
@@ -19,6 +20,9 @@ class AutoLR_Trainer(TrainerBase):
         weva_success = []
         lr_success = []
         ntrial_success = []
+
+        train_logs = []
+        valid_logs = []
 
         # setting scheduler & optimizer
         lr_scheduler = AutoLR(self.model, self.model_name, init_lr, self.max_f, self.min_f, self.thr_score)
@@ -63,6 +67,16 @@ class AutoLR_Trainer(TrainerBase):
                 # check trial condition and update current lr & get tried optimizer
                 Trial_error, score, now_lr = lr_scheduler.try_lr_update(weva_try, epoch, now_lr)
                 optimizer_try_lrs = lr_scheduler.get_lr(optimizer_try)
+
+                # check loss NaN
+                if math.isnan(train_loss):
+                    print('WARNING: non-finite loss, ending training ')
+                    model_name = self.board_name.split('/')[1]
+                    dataset = self.board_name.split('/')[2].split('_')[0]
+                    with open(f"./{model_name}/{dataset}/result.csv", 'a', newline='') as f:
+                        wr = csv.writer(f)
+                        wr.writerow(['GB', self.max_f, self.min_f, self.K, self.scale_factor, 'nan', 'nan', 'nan', 'nan', 'nan', self.log_time])
+                    exit()
 
                 # Success (score >= threshold score)
                 if Trial_error == False:
@@ -111,27 +125,27 @@ class AutoLR_Trainer(TrainerBase):
                 print(epoLfmt.format(*values))
                 print()
 
-            self.writer.add_scalar('Loss/train', train_loss, epoch)
-            self.writer.add_scalar('Acc/train', train_acc, epoch)
-
-            if epoch % 5 == 0:
+            train_logs.append([train_acc, train_loss])
+            
+            if epoch % 5 == 0 or epoch == epochs-1:
                 valid_loss, valid_acc = self.validation()
+                valid_logs.append([epoch, valid_acc, valid_loss, train_acc-valid_acc])
+                
                 print('validation loss:{:.3f}'.format(valid_loss), 'acc:{:.2f}'.format(valid_acc))
-                self.writer.add_scalar('Loss/val', valid_loss, epoch)
-                self.writer.add_scalar('Acc/val', valid_acc, epoch)
-                self.writer.add_scalar('Generalization_GAP', train_acc - valid_acc, epoch)
                 print()
 
-            if valid_loss <= best:
-                best = valid_loss
-                best_epoch = epoch + 1
-                torch.save(self.model.state_dict(), self.checkpt) 
-                bad_count = 0
-            else:
-                bad_count += 1
-            
-            if bad_count == 30:
-                break
+                if valid_acc >= best:
+                    best = valid_acc
+                    best_epoch = epoch + 1
+                    best_gap = train_acc - valid_acc
+                    torch.save(self.model.state_dict(), self.checkpt) 
+                    bad_count = 0
+                else:
+                    bad_count += 1
+                
+                # if bad_count == 30:
+                #     break
+
 
         end_time = datetime.now().strftime('%m-%d_%H%M%S')
         print('\nFinish training at', end_time)
@@ -145,4 +159,27 @@ class AutoLR_Trainer(TrainerBase):
         
         end_test_time = datetime.now().strftime('%m-%d_%H%M%S')
         print('\nFinish training at', end_test_time)
+
+        writer = SummaryWriter(f"./results/log/{self.board_name}")
+
+        for epoch, (acc, loss) in enumerate(train_logs):
+            writer.add_scalar('Acc/train', acc, epoch)
+            writer.add_scalar('Loss/train', loss, epoch)
+
+        for epoch, acc, loss, gap in valid_logs:
+            writer.add_scalar('Acc/val', acc, epoch)
+            writer.add_scalar('Loss/val', loss, epoch)
+            writer.add_scalar('Generalization_GAP', gap, epoch)
+
+        model_name = self.board_name.split('/')[1]
+        dataset = self.board_name.split('/')[2].split('_')[0]
+        
+        with open(f"./results/csvs/{model_name}/{dataset}/result.csv", 'a', newline='') as f:
+            wr = csv.writer(f)
+            wr.writerow(['auto', self.max_f, self.min_f, '-', '-', best, valid_acc, test_acc, best_gap, train_acc-valid_acc, self.log_time])
+        
+        with open(f"./results/csvs/{model_name}/{dataset}/success.csv", 'a', newline='') as f:
+            wr = csv.writer(f)
+            wr.writerow(['auto', best, test_acc, self.log_time])
+       
         return start_time, end_test_time

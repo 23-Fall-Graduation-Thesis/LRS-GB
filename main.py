@@ -25,14 +25,16 @@ def arg_parse(parser):
     parser.add_argument('--mode', type=str, default='standard', help='Standard(standard), LRS-GB(GB), AutoLR(auto)')
     parser.add_argument('--model_path', type=str, default='', help='pretrained model path')
 
-    parser.add_argument('--max_f', default=0.4, type=float, help='max_f for AutoLR')
-    parser.add_argument('--min_f', default=2, type=float, help='min_f for AutoLR')
+    parser.add_argument('--max_f', default=0.05, type=float, help='max_f for AutoLR')
+    parser.add_argument('--min_f', default=1.0, type=float, help='min_f for AutoLR')
     parser.add_argument('--thr_score', default=0.94, type=float, help='score threshold for AutoLR')
-    parser.add_argument('--thr_init_score', default=0.9, type=float, help='score threshold for LRS')
+    parser.add_argument('--thr_init_score', default=0.7, type=float, help='score threshold for LRS')
     parser.add_argument('--K', default=7.80246991703043, type=float, help='Lipschitz constant') # TODO: add head k
     parser.add_argument('--scale_factor', default=1.27679969876201, type=float, help='layer-wise constraint scaling')
-    parser.add_argument('--max_trial', default=10, type=int, help='trial maximum for GB lr update')
-    
+    parser.add_argument('--max_trial', default=20, type=int, help='trial maximum for GB lr update')
+
+    parser.add_argument('--k_multiply', default=1, type=float, help='')
+    parser.add_argument('--scale_multiply', default=1, type=float, help='')
 
     return parser.parse_args()
 
@@ -51,22 +53,24 @@ if __name__ == '__main__':
     
     # dataset load
     trainloader, validloader, testloader, num_class = datasetload(conf['dataset'], conf['batch_size'])
+
+    conf['K'] *= conf['k_multiply']
+    conf['scale_factor'] *= conf['scale_multiply']
     
     print()
     prnt(conf)
 
-    checkpt, board_name, writer, setting = set_loggers(conf)
+    checkpt, board_name, log_time = set_loggers(conf)
 
     model = select_model(conf['model'], num_class, pretrained_model=(not conf['pretrain']), checkpt=conf['model_path'])
-    # print('Experiment Setting:', setting, '|Croess-Entropy Loss|SGD optimizer')
 
 
     if conf['mode'] == 'standard' or conf['pretrain']:
-        trainer = Standard_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, writer))
+        trainer = Standard_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     elif conf['mode'] == 'auto':
-        trainer = AutoLR_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, writer))
+        trainer = AutoLR_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     elif conf['mode'] == 'GB':
-        trainer = LRS_GB_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, writer))
+        trainer = LRS_GB_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     else:
         pass
     

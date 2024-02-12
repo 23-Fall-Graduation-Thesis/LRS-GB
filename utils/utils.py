@@ -1,9 +1,8 @@
-import argparse, os, torch
+import argparse, os, time
 from torch.utils.tensorboard import SummaryWriter
 from scheduler.algorithm.Condition import *
 from scheduler.algorithm.TargetLR import *
 from scheduler.algorithm.TargetWeva import *
-import torch.optim as optim
 import numpy as np
 
 def str2bool(v):
@@ -17,26 +16,32 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 def set_loggers(conf):
+    log_time = time.strftime('%m%d-%H%M')
+
     # experiment setting values
-    setting = "epoch"+str(conf['epoch'])+"_lr"+str(conf['lr'])
     if conf['pretrain']:
         # make pretrained model
-        checkpt = f"./model/weight/pretrain/{conf['model']}/{conf['dataset']}_{setting}.pt"
-        board_name = str(conf['model'])+"/"+str(conf['dataset'])+"_"+setting
-        writer = SummaryWriter("./results/log/pretrain/"+board_name)
+        board_name = f"pretrain/{conf['model']}/{conf['dataset']}_lr{conf['lr']}"
         os.makedirs(f"./model/weight/pretrain/{conf['model']}", exist_ok=True)
-        
+        checkpt = f"./model/weight/pretrain/{board_name}.pt"
+
         print('model:', conf['model'], ' dataset:', conf['dataset'], 'pretrain: ', conf['pretrain'])
     else:
-        # save name setting for fine-tuning model
+        if conf['mode']=='standard':
+            setting = f"lr{conf['lr']}"
+        elif conf['mode']=='GB':
+            setting = f"max{round(conf['max_f'],3)}_min{round(conf['min_f'],3)}_K{round(conf['K'], 3)}_sf{round(conf['scale_factor'], 3)}"
+        elif conf['mode']=='auto':
+            setting = f"max{round(conf['max_f'],3)}_min{round(conf['min_f'],3)}"
+
+        os.makedirs(f"./model/weight/{conf['mode']}/{conf['model']}", exist_ok=True)
         checkpt = f"./model/weight/{conf['mode']}/{conf['model']}/{conf['dataset']}_{setting}.pt"
         board_name = f"{conf['mode']}/{conf['model']}/{conf['dataset']}_{setting}"
-        writer = SummaryWriter(f"./results/log/{board_name}")
-        os.makedirs(f"./model/weight/{conf['mode']}/{conf['model']}", exist_ok=True)
-        
+
         print('model:', conf['model'], ' dataset:', conf['dataset'], 'fine-tuning mode:', conf['mode'])
-        
-    return checkpt, board_name, writer, setting
+
+    return checkpt, board_name, log_time
+
 
 def get_size_scalar(torch_tensor):
     return np.prod(np.array(torch_tensor.shape))

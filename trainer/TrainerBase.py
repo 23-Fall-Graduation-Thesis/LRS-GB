@@ -15,7 +15,7 @@ class TrainerBase(ABC):
 
         self.trainloader, self.validloader, self.testloader = loaders
 
-        self.checkpt, self.board_name, self.writer = loggers
+        self.checkpt, self.board_name, self.log_time = loggers
 
     @abstractmethod
     def train_model(self):
@@ -100,7 +100,6 @@ class TrainerBase(ABC):
             optimizer_try.step()
 
         train_loss = train_loss / len(self.trainloader.dataset)
-        print(len(self.trainloader.dataset))
         train_acc = train_acc / len(self.trainloader.dataset) * 100
 
         return train_loss, train_acc, modelB
