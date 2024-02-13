@@ -6,8 +6,9 @@ SCALE = 1000000
 def get_size_scalar(torch_tensor):
     return np.prod(np.array(torch_tensor.shape))
 
+
 def compute_weight_variation(modelA, modelB, layer_name_dict):
-    L1_variation = [[0, 0] for _ in range(max(layer_name_dict.values())+1)]
+    variation = [[0, 0] for _ in range(max(layer_name_dict.values())+1)]
     
     for (layer_name, paramA), (_, paramB) in zip(modelA.named_parameters(), modelB.named_parameters()):
         curA = modelA # model_temp
@@ -26,16 +27,20 @@ def compute_weight_variation(modelA, modelB, layer_name_dict):
             if cur_name in layer_name_dict:
                 var_idx = layer_name_dict.get(cur_name)
         if (type(curA) in [torch.nn.Conv2d, torch.nn.Linear]) and ('downsample' not in layer_name):
-            L1_variation[var_idx][0] += get_size_scalar(paramA)
-            L1_variation[var_idx][1] += torch.pow(torch.norm(paramA.cpu() - paramB.cpu(), 2), 2).detach().numpy()
+            variation[var_idx][0] += get_size_scalar(paramA)
+            variation[var_idx][1] += torch.pow(torch.norm(paramA.cpu() - paramB.cpu(), 2), 2).detach().numpy()
     
-    L1_variation_calc = [(x[1]**0.5/x[0]*SCALE) for x in L1_variation]
+    variation_calc = [(x[1]**0.5/x[0]*SCALE) for x in variation]
 
-    return L1_variation_calc
+    return variation_calc
 
-#TODO:
+
+def compute_L1_weight_variation(modelA, modelB, layer_name_dict):
+    pass 
+
+
 def compute_weight_difference_and_variation(modelA, modelB, layer_name_dict):
-    L1_variation = [[0, 0] for _ in range(max(layer_name_dict.values())+1)]
+    variation = [[0, 0] for _ in range(max(layer_name_dict.values())+1)]
     distance_calc = [[] for _ in range(max(layer_name_dict.values())+1)]
     param_num_list = [0 for _ in range(max(layer_name_dict.values())+1)]
     for (layer_name, paramA), (_, paramB) in zip(modelA.named_parameters(), modelB.named_parameters()):
@@ -58,13 +63,19 @@ def compute_weight_difference_and_variation(modelA, modelB, layer_name_dict):
             weight_distance = paramA.cpu() - paramB.cpu()
             distance_calc[var_idx].append(weight_distance)
             size = get_size_scalar(paramA)
-            L1_variation[var_idx][0] += size
+            variation[var_idx][0] += size
             param_num_list[var_idx] += size
-            L1_variation[var_idx][1] += torch.pow(torch.norm(weight_distance, 2), 2).detach().numpy()
+            variation[var_idx][1] += torch.pow(torch.norm(weight_distance, 2), 2).detach().numpy()
     
-    L1_variation_calc = [(x[1]**0.5/x[0]*SCALE) for x in L1_variation]
+    variation_calc = [(x[1]**0.5/x[0]*SCALE) for x in variation]
     
-    return L1_variation_calc, distance_calc, param_num_list
+    return variation_calc, distance_calc, param_num_list
+
+
+def compute_L1_weight_difference_and_variation(modelA, modelB, layer_name_dict):
+    pass
+    
+
 
 def diff_to_weva(diff_list, n):
     temp = 0
@@ -73,6 +84,7 @@ def diff_to_weva(diff_list, n):
     weva = temp**0.5/n*SCALE
     
     return weva
+
 
 def layer_block_info(model_name):
     if model_name == "alexnet":
@@ -101,6 +113,7 @@ def get_num_layer(model_name):
 def get_frob_norm(w):
     return torch.sqrt(torch.sum(torch.pow(w, 2.0)))
 
+
 def get_lone_norm(w):
     if len(w.shape) != 2 and len(w.shape) != 4:
         assert len(w.shape) == 1
@@ -110,6 +123,7 @@ def get_lone_norm(w):
     if len(w.shape) == 4:
         axes=[1, 2, 3]
     return torch.sum(torch.abs(w), dim=axes, keepdims=True)
+
 
 def get_linf_norm(w):
     if len(w.shape) != 2 and len(w.shape) != 4:

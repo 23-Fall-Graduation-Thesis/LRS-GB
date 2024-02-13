@@ -4,7 +4,7 @@ from scheduler.LRS_GB import LRS_GB, LRS_GB_Score
 import copy, torch, math, csv
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
-from utils.lr_utils import compute_weight_variation, get_num_layer, compute_weight_difference_and_variation
+from utils.lr_utils import compute_weight_variation, get_num_layer, compute_weight_difference_and_variation, compute_L1_weight_variation, compute_L1_weight_difference_and_variation
 
 class LRS_GB_Trainer(TrainerBase):
     def __init__(self, model, conf, loaders, loggers):
@@ -217,6 +217,13 @@ class LRS_GB_Score_Trainer(TrainerBase):
         self.K = conf['K']
         self.scale_factor = conf['scale_factor']
         self.max_trial = conf['max_trial']
+        
+        if conf['norm'] == 'L1' :
+            self.get_weva =  compute_L1_weight_variation
+            self.get_weva_and_diff = compute_L1_weight_difference_and_variation
+        elif conf['norm'] == 'L2':
+            self.get_weva =  compute_weight_variation
+            self.get_weva_and_diff = compute_weight_difference_and_variation
 
     def train_model(self, epochs, init_lr):
         start_time = datetime.now().strftime('%m-%d_%H%M%S')
@@ -265,8 +272,8 @@ class LRS_GB_Score_Trainer(TrainerBase):
                 model_try = copy.deepcopy(self.model)
                 optimizer_try = lr_scheduler.optimizer_binding(model_try, now_lr)
                 train_loss, train_acc, model_try = self.train_1epoch(model_try, optimizer_try)
-                weva_try = compute_weight_variation(model_temp, model_try, lr_scheduler.layer_name_dict)
-                init_weva_try, init_diff_try, param_num_list = compute_weight_difference_and_variation(self.pretrain_model, model_try, lr_scheduler.layer_name_dict)
+                weva_try = self.get_weva(model_temp, model_try, lr_scheduler.layer_name_dict)
+                init_weva_try, init_diff_try, param_num_list = self.get_weva_and_diff(self.pretrain_model, model_try, lr_scheduler.layer_name_dict)
                 check_autoLR, check_GB, score, init_score = lr_scheduler.try_lr_update(weva_try, init_weva_try)
                 
                 # check loss NaN

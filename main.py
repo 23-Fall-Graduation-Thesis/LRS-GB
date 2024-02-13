@@ -36,6 +36,8 @@ def arg_parse(parser):
     parser.add_argument('--k_multiply', default=1, type=float, help='')
     parser.add_argument('--scale_multiply', default=1, type=float, help='')
 
+    parser.add_argument('--norm', tyoe=str, default='L2', help='weight calculation using L1 norm or L2 norm')
+    
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -70,7 +72,10 @@ if __name__ == '__main__':
     elif conf['mode'] == 'auto':
         trainer = AutoLR_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     elif conf['mode'] == 'GB':
-        trainer = LRS_GB_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
+        if conf['norm'] == 'L2':
+            trainer = LRS_GB_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
+        elif conf['norm'] == 'L1':
+            trainer = LRS_GB_Score_L1_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     else:
         pass
     
