@@ -72,11 +72,8 @@ if __name__ == '__main__':
     elif conf['mode'] == 'auto':
         trainer = AutoLR_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     elif conf['mode'] == 'GB':
-        if conf['norm'] == 'L2':
-            trainer = LRS_GB_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
-        elif conf['norm'] == 'L1':
-            trainer = LRS_GB_Score_L1_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
-    else:
+        trainer = LRS_GB_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
+    else :
         pass
     
     start_time, end_test_time = trainer.train_model(conf['epoch'], conf['lr'])

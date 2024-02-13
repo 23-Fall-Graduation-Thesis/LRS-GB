@@ -36,12 +36,36 @@ def compute_weight_variation(modelA, modelB, layer_name_dict):
 
 
 def compute_L1_weight_variation(modelA, modelB, layer_name_dict):
-    pass 
+    variation = [[0, 0] for _ in range(max(layer_name_dict.values())+1)]
+    
+    for (layer_name, paramA), (_, paramB) in zip(modelA.named_parameters(), modelB.named_parameters()):
+        curA = modelA # model_temp
+        curB = modelB # model_try
+        layer_name_splited = layer_name.split('.')[:-1] # .weight, .bias 제거 (이름만 확인)
+        for idx, name in enumerate(layer_name_splited):
+            if name.isdigit():
+                # 정수로 변환하여 순차적으로 인덱스로 접근
+                curA = curA[int(name)]
+                curB = curB[int(name)]
+            else:
+                # 그 외의 경우에는 getattr 사용
+                curA = getattr(curA, name)
+                curB = getattr(curB, name)
+            cur_name = '.'.join(layer_name_splited[:idx+1])
+            if cur_name in layer_name_dict:
+                var_idx = layer_name_dict.get(cur_name)
+        if (type(curA) in [torch.nn.Conv2d, torch.nn.Linear]) and ('downsample' not in layer_name):
+            weight_difference = paramA.cpu() - paramB.cpu()
+            variation[var_idx][0] += get_size_scalar(paramA)
+            variation[var_idx][1] += torch.norm(weight_difference, p=1).item()
+    variation_calc = [(x[1]/x[0]*SCALE) for x in variation]
+
+    return variation_calc 
 
 
 def compute_weight_difference_and_variation(modelA, modelB, layer_name_dict):
     variation = [[0, 0] for _ in range(max(layer_name_dict.values())+1)]
-    distance_calc = [[] for _ in range(max(layer_name_dict.values())+1)]
+    diff_calc = [[] for _ in range(max(layer_name_dict.values())+1)]
     param_num_list = [0 for _ in range(max(layer_name_dict.values())+1)]
     for (layer_name, paramA), (_, paramB) in zip(modelA.named_parameters(), modelB.named_parameters()):
         curA = modelA
@@ -60,22 +84,50 @@ def compute_weight_difference_and_variation(modelA, modelB, layer_name_dict):
             if cur_name in layer_name_dict:
                 var_idx = layer_name_dict.get(cur_name)
         if (type(curA) in [torch.nn.Conv2d, torch.nn.Linear]) and ('downsample' not in layer_name):
-            weight_distance = paramA.cpu() - paramB.cpu()
-            distance_calc[var_idx].append(weight_distance)
+            weight_difference = paramA.cpu() - paramB.cpu()
+            diff_calc[var_idx].append(weight_difference)
             size = get_size_scalar(paramA)
             variation[var_idx][0] += size
             param_num_list[var_idx] += size
-            variation[var_idx][1] += torch.pow(torch.norm(weight_distance, 2), 2).detach().numpy()
+            variation[var_idx][1] += torch.pow(torch.norm(weight_difference, 2), 2).detach().numpy()
     
     variation_calc = [(x[1]**0.5/x[0]*SCALE) for x in variation]
     
-    return variation_calc, distance_calc, param_num_list
+    return variation_calc, diff_calc, param_num_list
 
 
 def compute_L1_weight_difference_and_variation(modelA, modelB, layer_name_dict):
-    pass
+    variation = [[0, 0] for _ in range(max(layer_name_dict.values())+1)]
+    diff_calc = [[] for _ in range(max(layer_name_dict.values())+1)]
+    param_num_list = [0 for _ in range(max(layer_name_dict.values())+1)]
+    for (layer_name, paramA), (_, paramB) in zip(modelA.named_parameters(), modelB.named_parameters()):
+        curA = modelA
+        curB = modelB
+        layer_name_splited = layer_name.split('.')[:-1] # .weight, .bias 제거 (이름만 확인)
+        for idx, name in enumerate(layer_name_splited):
+            if name.isdigit():
+                # 정수로 변환하여 순차적으로 인덱스로 접근
+                curA = curA[int(name)]
+                curB = curB[int(name)]
+            else:
+                # 그 외의 경우에는 getattr 사용
+                curA = getattr(curA, name)
+                curB = getattr(curB, name)
+            cur_name = '.'.join(layer_name_splited[:idx+1])
+            if cur_name in layer_name_dict:
+                var_idx = layer_name_dict.get(cur_name)
+        if (type(curA) in [torch.nn.Conv2d, torch.nn.Linear]) and ('downsample' not in layer_name):
+            weight_difference = paramA.cpu() - paramB.cpu()
+            diff_calc[var_idx].append(weight_difference)
+            size = get_size_scalar(paramA)
+            variation[var_idx][0] += size
+            param_num_list[var_idx] += size
+            variation[var_idx][1] += torch.norm(weight_difference, p=1).item()
     
-
+    variation_calc = [(x[1]/x[0]*SCALE) for x in variation]
+    
+    return variation_calc, diff_calc, param_num_list
+    
 
 def diff_to_weva(diff_list, n):
     temp = 0
