@@ -36,7 +36,7 @@ def arg_parse(parser):
     parser.add_argument('--k_multiply', default=1, type=float, help='')
     parser.add_argument('--scale_multiply', default=1, type=float, help='')
 
-    parser.add_argument('--norm', tyoe=str, default='L2', help='weight calculation using L1 norm or L2 norm')
+    parser.add_argument('--norm', type=str, default='L2', help='weight calculation using L1 norm or L2 norm')
     
     return parser.parse_args()
 
