@@ -29,6 +29,7 @@ class TrainerBase(ABC):
         train_acc = 0
         for data, target in self.trainloader :
             self.optimizer.zero_grad()
+            target = torch.as_tensor(target, dtype=torch.long)
             data, target = data.to(self.device), target.to(self.device)
             output = self.model(data)
             loss = self.criterion(output, target)
@@ -50,6 +51,7 @@ class TrainerBase(ABC):
         valid_acc = 0
         with torch.no_grad():
             for data, target in self.validloader:
+                target = torch.as_tensor(target, dtype=torch.long)
                 data, target = data.to(self.device), target.to(self.device)
                 output = self.model(data)
                 valid_loss += self.criterion(output, target).item()
@@ -69,6 +71,7 @@ class TrainerBase(ABC):
         test_acc = 0
         with torch.no_grad():
             for data, target in self.testloader:
+                target = torch.as_tensor(target, dtype=torch.long)
                 data, target = data.to(self.device), target.to(self.device)
                 output = self.model(data)
                 test_loss += self.criterion(output, target).item()
