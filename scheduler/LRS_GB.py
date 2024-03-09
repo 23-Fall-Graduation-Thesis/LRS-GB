@@ -2,8 +2,9 @@ from typing import *
 from scheduler.SchedulerBase import SchedulerBase
 import torch.optim as optim
 
+#TODO: only GB is not implemented
 class LRS_GB(SchedulerBase):
-    def __init__(self, model, model_name, init_lr, max_f, min_f, thr_score, constraints: List[float], instances: Dict[str, str] = None):
+    def __init__(self, model, model_name, init_lr, max_f, min_f, thr_score, constraints: List[float], instances: Dict[str, str] = None, use_AutoLR: bool = False):
         if instances is None:
             instances = dict(
                 weva_method = "LRSGBTargetWeva",
@@ -69,7 +70,7 @@ class LRS_GB(SchedulerBase):
     
 
 class LRS_GB_Score(SchedulerBase):
-    def __init__(self, model, model_name, init_lr, max_f, min_f, thr_score, thr_init_score, K, scale_factor, instances: Dict[str, str] = None):
+    def __init__(self, model, model_name, init_lr, max_f, min_f, thr_score, thr_init_score, K, scale_factor, instances: Dict[str, str] = None, use_AutoLR: bool = False):
         if instances is None:
             instances = dict(
                 weva_method = "LRSRSLTargetWeva",
@@ -87,28 +88,35 @@ class LRS_GB_Score(SchedulerBase):
         self.e_drop = 40
         self.e_end = 50
         self.mlast = 3
+        
+        self.use_AutoLR = use_AutoLR
 
         self.weva_manager.init(max_f, min_f, K, scale_factor)
         self.condition_manager.init(thr_score, thr_init_score)
 
     
     def adjustLR(self, weva_table, now_init_weva, init_diff, lr_table, n_epoch, param_num_list, GB_update):
-        now_weva = weva_table[-1][:-1]
         now_lr = lr_table[-1][:-1]
         now_init_weva = now_init_weva[:-1] 
-        target_weva = self.weva_manager.cal_target_weva(weva_table, n_epoch)
-        if not target_weva:
-            target_weva = self.target_weva_set[-1]
-        else:
-            self.target_weva_set.append(target_weva)
-        
+        if self.use_AutoLR:
+            now_weva = weva_table[-1][:-1]
+            target_weva = self.weva_manager.cal_target_weva(weva_table, n_epoch)
+            if not target_weva:
+                target_weva = self.target_weva_set[-1]
+            else:
+                self.target_weva_set.append(target_weva)
+            
         target_init_weva = self.weva_manager.cal_target_init_weva(init_diff, param_num_list)
         self.target_init_weva_set.append(target_init_weva)
         
-        target_lr = self.lr_manager.cal_target_lr(now_weva, now_lr, target_weva, self.cls_lr)
+        if self.use_AutoLR:
+            target_lr = self.lr_manager.cal_target_lr(now_weva, now_lr, target_weva, self.cls_lr)
         target_init_lr = self.lr_manager.cal_target_init_lr(now_weva, now_lr, now_init_weva, target_init_weva, self.cls_lr)
         
-        adjust_lr = self.lr_manager.select_lr(GB_update, target_lr, target_init_lr)
+        if self.use_AutoLR:
+            adjust_lr = self.lr_manager.select_lr(GB_update, target_lr, target_init_lr)
+        else:
+            adjust_lr = target_init_lr
         
         return adjust_lr
     
@@ -122,6 +130,9 @@ class LRS_GB_Score(SchedulerBase):
         #             now_lr[i] = now_lr[i] * self.gamma
         # else:
         #     Trial_error = True
+        
+        if not self.use_AutoLR:
+            check_autoLR = True
         
         return check_autoLR, check_GB, score, init_score
     

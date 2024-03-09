@@ -218,6 +218,8 @@ class LRS_GB_Score_Trainer(TrainerBase):
         self.scale_factor = conf['scale_factor']
         self.max_trial = conf['max_trial']
         
+        self.use_AutoLR = conf['use_AutoLR']
+        
         if conf['norm'] == 'L1' :
             self.get_weva =  compute_L1_weight_variation
             self.get_weva_and_diff = compute_L1_weight_difference_and_variation
@@ -235,7 +237,7 @@ class LRS_GB_Score_Trainer(TrainerBase):
         lr_success = []
         ntrial_success = []
 
-        lr_scheduler = LRS_GB_Score(self.model, self.model_name, init_lr, self.max_f, self.min_f, self.thr_score, self.thr_init_score, self.K, self.scale_factor) #TODO instance arg_parser
+        lr_scheduler = LRS_GB_Score(self.model, self.model_name, init_lr, self.max_f, self.min_f, self.thr_score, self.thr_init_score, self.K, self.scale_factor, self.use_AutoLR) #TODO instance arg_parser
         self.optimizer = lr_scheduler.optimizer_binding(self.model, [init_lr])
         
         best = 0

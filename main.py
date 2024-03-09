@@ -38,6 +38,8 @@ def arg_parse(parser):
 
     parser.add_argument('--norm', type=str, default='L2', help='weight calculation using L1 norm or L2 norm')
     
+    parser.add_argument('--use_AutoLR', type=str2bool, default=False, help='when you using LRS_GB, both using AutoLR Condition?')
+    
     return parser.parse_args()
 
 if __name__ == '__main__':
