@@ -30,9 +30,9 @@ def set_loggers(conf):
         if conf['mode']=='standard':
             setting = f"lr{conf['lr']}"
         elif conf['mode']=='GB':
-            setting = f"max{round(conf['max_f'],3)}_min{round(conf['min_f'],3)}_K{round(conf['K'], 3)}_sf{round(conf['scale_factor'], 3)}"
+            setting = f"lr{conf['lr']}/max{round(conf['max_f'],3)}_min{round(conf['min_f'],3)}_K{round(conf['K'], 3)}_sf{round(conf['scale_factor'], 3)}"
         elif conf['mode']=='auto':
-            setting = f"max{round(conf['max_f'],3)}_min{round(conf['min_f'],3)}"
+            setting = f"lr{conf['lr']}/max{round(conf['max_f'],3)}_min{round(conf['min_f'],3)}"
 
         os.makedirs(f"./model/weight/{conf['mode']}/{conf['model']}", exist_ok=True)
         checkpt = f"./model/weight/{conf['mode']}/{conf['model']}/{conf['dataset']}_{log_time}.pt"

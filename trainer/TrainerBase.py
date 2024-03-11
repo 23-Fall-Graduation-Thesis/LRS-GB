@@ -95,6 +95,7 @@ class TrainerBase(ABC):
             optimizer_try.zero_grad()
             # forward
             output = modelB(data)
+            target = target.type(torch.LongTensor).to(self.device)
             loss = self.criterion(output, target)
             train_loss += loss.item()
             pred = output.argmax(dim=1, keepdim=True)

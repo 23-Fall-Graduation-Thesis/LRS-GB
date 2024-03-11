@@ -13,6 +13,7 @@ class AutoLR_Trainer(TrainerBase):
         self.thr_score = conf['thr_score']
 
     def train_model(self, epochs, init_lr):
+        writer = SummaryWriter(f"./results/log/{self.board_name}")
         start_time = datetime.now().strftime('%m-%d_%H%M%S')
         print('\nStart training at', start_time)
     
@@ -162,7 +163,6 @@ class AutoLR_Trainer(TrainerBase):
         end_test_time = datetime.now().strftime('%m-%d_%H%M%S')
         print('\nFinish training at', end_test_time)
 
-        writer = SummaryWriter(f"./results/log/{self.board_name}")
 
         for epoch, (acc, loss) in enumerate(train_logs):
             writer.add_scalar('Acc/train', acc, epoch)

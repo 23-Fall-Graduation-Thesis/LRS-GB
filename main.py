@@ -9,6 +9,7 @@ from model.pretrained_models import select_model
 from trainer.Standard_Trainer import Standard_Trainer
 from trainer.AutoLR_Trainer import AutoLR_Trainer
 from trainer.LRS_GB_Trainer import *
+import random
 
 def arg_parse(parser):
     parser = argparse.ArgumentParser()
@@ -42,13 +43,23 @@ def arg_parse(parser):
     
     return parser.parse_args()
 
+def set_seed(seed=2023):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
 if __name__ == '__main__':
     # arguments parsing
     args = arg_parse(argparse.ArgumentParser())
     
     # random seed
-    np.random.seed(2023)
-    torch.manual_seed(2023)
+    # np.random.seed(2023)
+    # torch.manual_seed(2023)
+    set_seed()
     
     # cuda device
     conf = dict()
