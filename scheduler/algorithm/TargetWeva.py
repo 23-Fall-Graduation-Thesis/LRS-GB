@@ -146,6 +146,7 @@ class LRSRSLTargetWeva(AutoLRTargetWeva):
                 norms = get_lone_norm(diff)
                 K = self.K * pow(self.scale_factor, int(i/2))
                 target_temp.append(diff * (1.0 / torch.maximum(torch.tensor(1.0, device=norms.device), norms / K)))
+                # print(norms / K)
             n = param_num_list[i]
             target_init_weva.append(diff_to_weva(target_temp, n))
         self.trial += 1

@@ -118,9 +118,10 @@ class LRSScoreCondition(ConditionBase):
         check_autoLR, check_GB = True, True
         weva_idx = self.sigma_function(weva_try[:-1])
         score = self.get_score(weva_idx) # AutoLR score
+        # print(init_weva_target, init_weva_try)
         if len(init_weva_target) > 0:
             init_weva_target = init_weva_target[-1]
-            init_score = self.get_init_score(init_weva_try[:-1], init_weva_target[:-1]) # LRS_score
+            init_score = self.get_init_score(init_weva_try[:-1], init_weva_target) # LRS_score
         else:
             init_score = 1
 

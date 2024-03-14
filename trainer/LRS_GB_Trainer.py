@@ -140,6 +140,7 @@ class LRS_GB_Trainer(TrainerBase):
 
 
                 if Trial_error == True:
+                    # if self.use_AutoLR:
                     de_weva = lr_scheduler.target_weva_set[-1]
                     de_init_weva = lr_scheduler.target_init_weva_set[-1]
                     epoLfmt = ['{:.6f}'] * len(de_weva)
@@ -237,7 +238,7 @@ class LRS_GB_Score_Trainer(TrainerBase):
         lr_success = []
         ntrial_success = []
 
-        lr_scheduler = LRS_GB_Score(self.model, self.model_name, init_lr, self.max_f, self.min_f, self.thr_score, self.thr_init_score, self.K, self.scale_factor, self.use_AutoLR) #TODO instance arg_parser
+        lr_scheduler = LRS_GB_Score(self.model, self.model_name, init_lr, self.max_f, self.min_f, self.thr_score, self.thr_init_score, self.K, self.scale_factor, use_AutoLR=self.use_AutoLR) #TODO instance arg_parser
         self.optimizer = lr_scheduler.optimizer_binding(self.model, [init_lr])
         
         best = 0
@@ -276,6 +277,8 @@ class LRS_GB_Score_Trainer(TrainerBase):
                 train_loss, train_acc, model_try = self.train_1epoch(model_try, optimizer_try)
                 weva_try = self.get_weva(model_temp, model_try, lr_scheduler.layer_name_dict)
                 init_weva_try, init_diff_try, param_num_list = self.get_weva_and_diff(self.pretrain_model, model_try, lr_scheduler.layer_name_dict)
+                target_init_weva = lr_scheduler.weva_manager.cal_target_init_weva(init_diff_try, param_num_list)
+                lr_scheduler.target_init_weva_set.append(target_init_weva)
                 check_autoLR, check_GB, score, init_score = lr_scheduler.try_lr_update(weva_try, init_weva_try)
                 
                 # check loss NaN
@@ -349,23 +352,24 @@ class LRS_GB_Score_Trainer(TrainerBase):
 
 
                 if Trial_error == True:
-                    de_weva = lr_scheduler.target_weva_set[-1]
-                    de_init_weva = lr_scheduler.target_init_weva_set[-1]
-                    epoLfmt = ['{:.6f}'] * len(de_weva)
-                    epoLfmt = ' '.join(epoLfmt)
-                    values = []
-                    for i in range(len(de_weva)):
-                        values.append(de_weva[i])
-                    epoLfmt = '    TargetWeVa :' + epoLfmt
-                    print(epoLfmt.format(*values))
-                    
-                    epoinitLfmt = ['{:.6f}'] * len(de_init_weva)
-                    epoinitLfmt = ' '.join(epoinitLfmt)
-                    values = []
-                    for i in range(len(de_init_weva)):
-                        values.append(de_init_weva[i])
-                    epoinitLfmt = 'TargetInitWeVa :' + epoinitLfmt
-                    print(epoinitLfmt.format(*values))
+                    if self.use_AutoLR:
+                        de_weva = lr_scheduler.target_weva_set[-1]
+                        epoLfmt = ['{:.6f}'] * len(de_weva)
+                        epoLfmt = ' '.join(epoLfmt)
+                        values = []
+                        for i in range(len(de_weva)):
+                            values.append(de_weva[i])
+                        epoLfmt = '    TargetWeVa :' + epoLfmt
+                        print(epoLfmt.format(*values))
+
+                de_init_weva = lr_scheduler.target_init_weva_set[-1]
+                epoinitLfmt = ['{:.6f}'] * len(de_init_weva)
+                epoinitLfmt = ' '.join(epoinitLfmt)
+                values = []
+                for i in range(len(de_init_weva)):
+                    values.append(de_init_weva[i])
+                epoinitLfmt = 'TargetInitWeVa :' + epoinitLfmt
+                print(epoinitLfmt.format(*values))
 
                 epoLfmt = ['{:.6f}'] * (len(optimizer_try_lrs)-1)
                 epoLfmt = ' '.join(epoLfmt)
@@ -374,6 +378,7 @@ class LRS_GB_Score_Trainer(TrainerBase):
                     values.append(optimizer_try_lrs[i])
                 epoLfmt = '  LearningRate :' + epoLfmt
                 print(epoLfmt.format(*values))
+
                 print()
                 
             train_logs.append([train_acc, train_loss])

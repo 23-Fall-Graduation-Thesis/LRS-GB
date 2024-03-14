@@ -70,7 +70,7 @@ class LRS_GB(SchedulerBase):
     
 
 class LRS_GB_Score(SchedulerBase):
-    def __init__(self, model, model_name, init_lr, max_f, min_f, thr_score, thr_init_score, K, scale_factor, instances: Dict[str, str] = None, use_AutoLR: bool = False):
+    def __init__(self, model, model_name, init_lr, max_f, min_f, thr_score, thr_init_score, K, scale_factor, instances : Dict[str, str] = None, use_AutoLR: bool = False):
         if instances is None:
             instances = dict(
                 weva_method = "LRSRSLTargetWeva",
@@ -98,8 +98,8 @@ class LRS_GB_Score(SchedulerBase):
     def adjustLR(self, weva_table, now_init_weva, init_diff, lr_table, n_epoch, param_num_list, GB_update):
         now_lr = lr_table[-1][:-1]
         now_init_weva = now_init_weva[:-1] 
+        now_weva = weva_table[-1][:-1]
         if self.use_AutoLR:
-            now_weva = weva_table[-1][:-1]
             target_weva = self.weva_manager.cal_target_weva(weva_table, n_epoch)
             if not target_weva:
                 target_weva = self.target_weva_set[-1]
