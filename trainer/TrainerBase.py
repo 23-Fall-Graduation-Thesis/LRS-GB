@@ -83,8 +83,8 @@ class TrainerBase(ABC):
         
         return test_loss, test_acc
     
-    def train_1epoch(self, modelB, optimizer_try,):
-        modelB = modelB.to(self.device)
+    def train_1epoch(self, model, optimizer_try):
+        model = model.to(self.device)
 
         train_loss = 0.0
         train_acc = 0
@@ -94,7 +94,7 @@ class TrainerBase(ABC):
             data, target = Variable(data.to(self.device)), Variable(target.to(self.device))
             optimizer_try.zero_grad()
             # forward
-            output = modelB(data)
+            output = model(data)
             target = target.type(torch.LongTensor).to(self.device)
             loss = self.criterion(output, target)
             train_loss += loss.item()
@@ -106,4 +106,4 @@ class TrainerBase(ABC):
         train_loss = train_loss / len(self.trainloader.dataset)
         train_acc = train_acc / len(self.trainloader.dataset) * 100
 
-        return train_loss, train_acc, modelB
+        return train_loss, train_acc, model

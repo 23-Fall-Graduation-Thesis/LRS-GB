@@ -61,7 +61,7 @@ class AutoLRCondition(ConditionBase):
         return 1.0 - diff / len(A) ** 2 * 2
 
 # Trial1
-class LRSGBCondition(ConditionBase):
+class GBwithAutoLRcondition(ConditionBase):
     def __init__(self):
         pass
     
@@ -103,7 +103,7 @@ class LRSGBCondition(ConditionBase):
         return 1.0 - diff / len(A) ** 2 * 2
     
 # Trial2
-class LRSScoreCondition(ConditionBase):
+class GBScorewithAutoLRcondition(ConditionBase):
     def __init__(self):
         pass
     
@@ -147,6 +147,45 @@ class LRSScoreCondition(ConditionBase):
             diff += abs(index - element)
         
         return 1.0 - diff / len(A) ** 2 * 2
+    
+    def get_init_score(self, init_weva, target_init_weva):
+        score = 0.
+        for cur, target in zip(init_weva, target_init_weva):
+            err = max(0, cur-target)
+            score += 1/(1+err)
+        score /= len(init_weva)
+        return score
+
+# only GB - score
+class LRSGBCondition(ConditionBase):
+    def __init__(self):
+        pass
+
+    def init(self, thr_init_score):
+        super().__init__()
+        self.thr_init_score = thr_init_score
+
+    def check_condition(self, init_weva_try, target_init_weva_set) :
+        check_GB = True
+        if len(target_init_weva_set) > 0:
+            target_init_weva = target_init_weva_set[-1]
+            init_score = self.get_init_score(init_weva_try[:-1], target_init_weva) # LRS_score
+        else:
+            raise ValueError("target init weva must be calculated before check condition")
+
+        if init_score < self.thr_init_score:
+            check_GB = False
+        
+        return check_GB, init_score
+    
+    
+    def adjust_condition(self):
+        pass
+    
+    
+    def get_condition(self):
+        return self.thr_init_score
+    
     
     def get_init_score(self, init_weva, target_init_weva):
         score = 0.

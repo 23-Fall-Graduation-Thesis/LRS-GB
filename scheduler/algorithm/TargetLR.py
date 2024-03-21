@@ -12,9 +12,6 @@ class TargetLRBase(ABC):
     def cal_target_init_lr(self):
         pass
     
-    @abstractmethod
-    def select_lr(self):
-        pass
 
 class AutoLRTargetLR(TargetLRBase):
     def __init__(self):
@@ -39,11 +36,8 @@ class AutoLRTargetLR(TargetLRBase):
         pass
 
 
-    def select_lr(self):
-        pass
-
 # Trial 1
-class LRSGBTargetLR(AutoLRTargetLR):
+class GBwithAutoLRTargetLR(AutoLRTargetLR):
     def __init__(self):
         super().__init__()
 
@@ -64,3 +58,21 @@ class LRSGBTargetLR(AutoLRTargetLR):
             return target_init_lr
         else:
             return target_lr
+        
+# only GB - Score
+class LRSGBTargetLR(TargetLRBase):
+    def __init__(self):
+        super().__init__()
+
+    def cal_target_lr(self):
+        pass
+
+    def cal_target_init_lr(self, now_weva, now_lr, now_init_weva, target_init_weva, cls_lr):
+        target_init_lr = []
+        for i in range(len(now_lr)):
+            temp = (now_lr[i] * (target_init_weva[i] - now_init_weva[i] + now_weva[i])) / now_weva[i]
+            target_init_lr.append(temp)
+
+        target_init_lr.append(cls_lr)
+        
+        return target_init_lr

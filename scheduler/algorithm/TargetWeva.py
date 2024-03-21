@@ -87,7 +87,7 @@ class AutoLRTargetWeva(TargetWevaBase):
         pass
 
 # Trial 1
-class LRSGBTargetWeva(AutoLRTargetWeva):
+class GBwithAutoLRTargetWeva(AutoLRTargetWeva):
     def __init__(self):
         pass
     
@@ -121,7 +121,7 @@ class LRSGBTargetWeva(AutoLRTargetWeva):
         return target_init_weva
     
 # Trial 2
-class LRSRSLTargetWeva(AutoLRTargetWeva):
+class GBScorewithAutoLRTargetWeva(AutoLRTargetWeva):
     def __init__(self):
         pass
     
@@ -141,14 +141,55 @@ class LRSRSLTargetWeva(AutoLRTargetWeva):
         #print(len(weight_difference), len(param_num_list))
         for i, diff_list in enumerate(weight_difference[:-1]):
             target_temp = []
-            #print("diff len", len(diff_list))
+            print("diff len", len(diff_list))
             for diff in diff_list:
                 norms = get_lone_norm(diff)
                 K = self.K * pow(self.scale_factor, int(i/2))
                 target_temp.append(diff * (1.0 / torch.maximum(torch.tensor(1.0, device=norms.device), norms / K)))
+                print(norms.size())
+                print(norms.mean(), K)
                 # print(norms / K)
             n = param_num_list[i]
+            print()
             target_init_weva.append(diff_to_weva(target_temp, n))
+            print(target_temp.mean(), target_init_weva[-1].mean())
+        # print(target_init_weva)
         self.trial += 1
         #print("result: ", len(target_init_weva))
         return target_init_weva
+
+# only GB - score
+class LRSGBTargetWeight(TargetWevaBase):
+    def __init__(self):
+        pass
+    
+    def init(self, K, scale_factor):
+        super().__init__()
+        self.K = K
+        self.scale_factor = scale_factor
+
+    def cal_target_weva(self):
+        pass
+
+    #NOTE: 모든 WEIGHT 수정
+    def cal_target_init_weva(self, init_diff_table, n_epoch, param_num_list):
+        if len(init_diff_table) <= 1:
+            # 새로 target init weight variation을 계산해야 하는 경우
+            now_init_diff = init_diff_table[-1]
+            target_init_weva = []
+
+            for i, diff_list in enumerate(now_init_diff[:-1]):
+                target_temp = []
+
+                for diff in diff_list:
+                    norms = get_lone_norm(diff)
+                    K = self.K * pow(self.scale_factor, int(i/2))
+                    target_temp.append(diff * (1.0 / torch.maximum(torch.tensor(1.0, device=norms.device), norms / K)))
+                    
+                n = param_num_list[i]
+                target_init_weva.append(diff_to_weva(target_temp, n))
+
+            return target_init_weva
+        else:
+            return False
+        
