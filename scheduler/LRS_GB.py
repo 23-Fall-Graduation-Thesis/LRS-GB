@@ -3,7 +3,7 @@ from scheduler.SchedulerBase import SchedulerBase
 import torch.optim as optim
 
 class LRS_GB_Score(SchedulerBase):
-    def __init__(self, model, model_name, init_lr, thr_init_score, K, scale_factor, instances : Dict[str, str] = None):
+    def __init__(self, model, model_name, init_lr, thr_init_score, K, scale_factor, bound, instances : Dict[str, str] = None):
         if instances is None:
             instances = dict(
                 weva_method = "LRSGBTargetWeight",
@@ -21,7 +21,7 @@ class LRS_GB_Score(SchedulerBase):
         self.e_end = 50
         self.mlast = 3
 
-        self.weva_manager.init(K, scale_factor)
+        self.weva_manager.init(K, scale_factor, bound)
         self.condition_manager.init(thr_init_score)
 
     def set_initial_weva(self, init_diff_table, n_epoch, param_num_list):

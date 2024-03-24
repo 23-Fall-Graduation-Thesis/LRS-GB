@@ -32,14 +32,12 @@ def arg_parse(parser):
     parser.add_argument('--thr_init_score', default=0.9, type=float, help='score threshold for LRS')
     parser.add_argument('--K', default=7.80246991703043, type=float, help='Lipschitz constant') # TODO: add head k
     parser.add_argument('--scale_factor', default=1.27679969876201, type=float, help='layer-wise constraint scaling')
-    parser.add_argument('--max_trial', default=20, type=int, help='trial maximum for GB lr update')
 
-    parser.add_argument('--k_multiply', default=1, type=float, help='')
-    parser.add_argument('--scale_multiply', default=1, type=float, help='')
-
+    parser.add_argument('--bound', default='diff', type=str, help='diff or weva')
+    
     parser.add_argument('--norm', type=str, default='L2', help='weight calculation using L1 norm or L2 norm')
     
-    parser.add_argument('--use_AutoLR', type=str2bool, default=False, help='when you using LRS_GB, both using AutoLR Condition?')
+    # parser.add_argument('--use_AutoLR', type=str2bool, default=False, help='when you using LRS_GB, both using AutoLR Condition?')
     
     return parser.parse_args()
 
@@ -49,16 +47,14 @@ def set_seed(seed=2023):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    # torch.backends.cudnn.deterministic = True
+    # torch.backends.cudnn.benchmark = False
 
 if __name__ == '__main__':
     # arguments parsing
     args = arg_parse(argparse.ArgumentParser())
     
     # random seed
-    # np.random.seed(2023)
-    # torch.manual_seed(2023)
     set_seed()
     
     # cuda device
@@ -68,9 +64,6 @@ if __name__ == '__main__':
     
     # dataset load
     trainloader, validloader, testloader, num_class = datasetload(conf['dataset'], conf['batch_size'])
-
-    conf['K'] *= conf['k_multiply']
-    conf['scale_factor'] *= conf['scale_multiply']
     
     print()
     prnt(conf)

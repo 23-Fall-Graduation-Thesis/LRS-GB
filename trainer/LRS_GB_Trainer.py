@@ -11,14 +11,10 @@ class LRS_GB_Score_Trainer(TrainerBase):
     def __init__(self, model, conf, loaders, loggers):
         super().__init__(model, conf['model'], conf['device'], loaders, loggers)
         self.pretrain_model = copy.deepcopy(model) 
-        # self.max_f, self.min_f = conf['max_f'], conf['min_f']
-        # self.thr_score = conf['thr_score']
         self.thr_init_score = conf['thr_init_score']
         self.K = conf['K']
         self.scale_factor = conf['scale_factor']
-        # self.max_trial = conf['max_trial']
-        
-        # self.use_AutoLR = conf['use_AutoLR']
+        self.bound = conf['bound']
         
         if conf['norm'] == 'L1' :
             self.get_weva =  compute_L1_weight_variation
@@ -37,7 +33,7 @@ class LRS_GB_Score_Trainer(TrainerBase):
         lr_success = []
         ntrial_success = []
 
-        lr_scheduler = LRS_GB_Score(self.model, self.model_name, init_lr, self.thr_init_score, self.K, self.scale_factor) #TODO instance arg_parser
+        lr_scheduler = LRS_GB_Score(self.model, self.model_name, init_lr, self.thr_init_score, self.K, self.scale_factor, self.bound) #TODO instance arg_parser
         self.optimizer = lr_scheduler.optimizer_binding(self.model, [init_lr])
         
         best = 0
@@ -82,15 +78,16 @@ class LRS_GB_Score_Trainer(TrainerBase):
                 lr_scheduler.set_initial_weva(init_diff_table, epoch, param_num_list)
                 Trial_error, init_score = lr_scheduler.try_lr_update(init_weva_try)
                 
-                # # check loss NaN
-                # if math.isnan(train_loss):
-                #     print('WARNING: non-finite loss, ending training ')
-                #     model_name = self.board_name.split('/')[1]
-                #     dataset = self.board_name.split('/')[2].split('_')[0]
-                #     with open(f"./results/csvs/{model_name}/{dataset}/result.csv", 'a', newline='') as f:
-                #         wr = csv.writer(f)
-                #         wr.writerow(['GB', self.max_f, self.min_f, self.K, self.scale_factor, 'nan', epoch, 'nan', 'nan', 'nan', self.log_time])
-                #     exit()
+                # check loss NaN
+                if math.isnan(train_loss):
+                    print('WARNING: non-finite loss, ending training ')
+                    model_name = self.board_name.split('/')[1]
+                    dataset = self.board_name.split('/')[2].split('_')[0]
+                    with open(f"./results/nan.csv", 'a', newline='') as f:
+                        wr = csv.writer(f)
+                        # wr.writerow([self.model_name, self.dataset])
+                        wr.writerow(['GB', self.max_f, self.min_f, self.K, self.scale_factor, 'nan', epoch, 'nan', 'nan', 'nan', self.log_time])
+                    exit()
 
                 optimizer_try_lrs = lr_scheduler.get_lr(optimizer_try)
 
