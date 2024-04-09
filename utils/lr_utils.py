@@ -128,11 +128,13 @@ def compute_L1_weight_difference_and_variation(modelA, modelB, layer_name_dict):
     
     return variation_calc, diff_calc, param_num_list
     
-
+# L2 norm
 def diff_to_weva(diff_list, n):
     temp = 0
     for diff in diff_list:
+        # temp += torch.norm(diff, p=1).detach().numpy() # L1 Norm
         temp += torch.pow(torch.norm(diff, 2), 2).detach().numpy()
+
     weva = temp**0.5/n*SCALE
     
     return weva
@@ -186,3 +188,8 @@ def get_linf_norm(w):
     if len(w.shape) == 4:
         axes=[1, 2, 3]
     return torch.max(torch.sum(torch.abs(w), dim=axes))
+
+def increase_K(cur_epoch, tot_epoch, init_K):
+    K = init_K*(cur_epoch+1)/tot_epoch
+    print('current epoch:', cur_epoch, '\tK: ',K)
+    return K

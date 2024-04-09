@@ -170,35 +170,134 @@ class LRSGBTargetWeight(TargetWevaBase):
     def cal_target_weva(self):
         pass
 
+
     #NOTE: 모든 WEIGHT 수정
     def cal_target_init_weva(self, init_diff_table, n_epoch, param_num_list):
         if len(init_diff_table) <= 1:
             # 새로 target init weight variation을 계산해야 하는 경우
             now_init_diff = init_diff_table[-1]
-            target_init_weva = []
+            # print(now_init_diff)
+            self.target_init_weva = []
 
             for i, diff_list in enumerate(now_init_diff[:-1]):
                 n = param_num_list[i]
+                K = self.K * pow(self.scale_factor, int(i/2))
+                # print(K)
+
+                if self.bound == 'diff':
+                    target_temp = []
+                    for diff in diff_list:
+                        norms = torch.norm(diff, p=2, dim=(1,2,3), keepdim=True) # 일단 지금은 L2 norm이라 이렇게 맞춤 -> L1 norm일 경우 여기와 diff to weva 수정 필요
+                        target_temp.append(diff * (1.0 / torch.maximum(torch.tensor(1.0, device=norms.device), norms / K)))
+                    
+                    self.target_init_weva.append(diff_to_weva(target_temp, n))
+
+                elif self.bound == 'weva':
+                    weva = diff_to_weva(diff_list, n)
+                    # target_init_weva.append(weva * (1.0 / torch.maximum(torch.tensor(1.0), weva / K)))
+                    self.target_init_weva.append(min(weva, K))
+                    # weva 자체가 norm이기 때문에 bound를 적용하면, 그냥 계산된 오름차순이 generalization bound가 됨
+
+            return self.target_init_weva
+        else:
+            # return False
+            # epoch 내에서 trial마다 update
+            now_init_diff = init_diff_table[-1]
+
+            try_target_init_weva = []
+
+            for i, diff_list in enumerate(now_init_diff[:-1]):
+                n = param_num_list[i]
+                K = self.K * pow(self.scale_factor, int(i/2))
 
                 if self.bound == 'diff':
                     target_temp = []
                     for diff in diff_list:
                         norms = get_lone_norm(diff)
-                        K = self.K * pow(self.scale_factor, int(i/2))
                         target_temp.append(diff * (1.0 / torch.maximum(torch.tensor(1.0, device=norms.device), norms / K)))
-                        
-                    target_init_weva.append(diff_to_weva(target_temp, n))
+                    
+                    try_target_init_weva.append(diff_to_weva(target_temp, n))
 
                 elif self.bound == 'weva':
                     weva = diff_to_weva(diff_list, n)
-                    K = self.K * pow(self.scale_factor, int(i/2))
-                    # target_init_weva.append(weva * (1.0 / torch.maximum(torch.tensor(1.0), weva / K)))
-                    target_init_weva.append(min(weva, K))
-                    # weva 자체가 norm이기 때문에 bound를 적용하면, 그냥 계산된 오름차순이 generalization bound가 됨 ?
+                    try_target_init_weva.append(min(weva, K))
+                
+            self.target_init_weva = [max(x, y) for x, y in zip(self.target_init_weva, try_target_init_weva)]
 
-            return target_init_weva
-        else:
-            return False
+            return self.target_init_weva
 
 
+# Trial 3
+class LRSGBwithAutoLRInitTargetWeight(TargetWevaBase):
+    def __init__(self):
+        pass
+    
+    def init(self, K, scale_factor, bound, min_f, max_f):
+        super().__init__()
+        self.K = K
+        self.scale_factor = scale_factor
+        self.bound = bound
+        self.max_f = max_f
+        self.min_f = min_f
+
+    def cal_target_weva(self):
+        pass
         
+    def cal_target_init_weva(self, init_diff_table, n_epoch, param_num_list):
+        now_init_diff = init_diff_table[-1]
+        if len(init_diff_table) <= 1 and n_epoch < 1:
+            now_weva = []
+            for i, diff_list in enumerate(now_init_diff[:-1]):
+                n = param_num_list[i]
+                now_weva.append(diff_to_weva(diff_list, n))
+            
+            max_weva = max(now_weva)
+            min_weva = min(now_weva)
+            if n_epoch == 0:
+                max_weva = max_weva * self.max_f
+                min_weva = min_weva * self.min_f
+            print('Bound condition of weigh variation are Max: {:.6f} Min: {:.6f}'.format(max_weva, min_weva))
+            interval = (max_weva - min_weva) / (len(now_init_diff[:-1]) - 1)
+            
+            bias = min_weva
+            self.target_init_weva = [] # v_bar_t
+            for i in range(len(now_weva)):
+                    self.target_init_weva.append(bias + i * interval)
+            return self.target_init_weva
+        elif len(init_diff_table) <= 1 and n_epoch >= 1:
+            self.target_init_weva = []
+            
+            for i, diff_list in enumerate(now_init_diff[:-1]):
+                n = param_num_list[i]
+                
+                weva = diff_to_weva(diff_list, n)
+                K = self.K * pow(self.scale_factor, int(i/2))
+                # target_init_weva.append(weva * (1.0 / torch.maximum(torch.tensor(1.0), weva / K)))
+                self.target_init_weva.append(min(weva, K))
+            
+            return self.target_init_weva
+        else:
+            now_init_diff = init_diff_table[-1]
+
+            try_target_init_weva = []
+
+            for i, diff_list in enumerate(now_init_diff[:-1]):
+                n = param_num_list[i]
+                K = self.K * pow(self.scale_factor, int(i/2))
+
+                if self.bound == 'diff':
+                    target_temp = []
+                    for diff in diff_list:
+                        norms = get_lone_norm(diff)
+                        target_temp.append(diff * (1.0 / torch.maximum(torch.tensor(1.0, device=norms.device), norms / K)))
+                    
+                    try_target_init_weva.append(diff_to_weva(target_temp, n))
+
+                elif self.bound == 'weva':
+                    weva = diff_to_weva(diff_list, n)
+                    try_target_init_weva.append(min(weva, K))
+                
+            self.target_init_weva = [max(x, y) for x, y in zip(self.target_init_weva, try_target_init_weva)]
+
+            return self.target_init_weva
+                    

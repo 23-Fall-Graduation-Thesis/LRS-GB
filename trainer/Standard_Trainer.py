@@ -16,7 +16,7 @@ class Standard_Trainer(TrainerBase):
         start_time = datetime.now().strftime('%m-%d_%H%M%S')
         print('\nStart training at', start_time)
         
-        best = 99999999
+        best = 0
         best_epoch = 0
         bad_count = 0
         for epoch in range(epochs):
@@ -60,13 +60,11 @@ class Standard_Trainer(TrainerBase):
         model_name = self.board_name.split('/')[1]
         dataset = self.board_name.split('/')[2].split('_')[0]
         
-        with open(f"./results/csvs/{model_name}/{dataset}/result.csv", 'a', newline='') as f:
+
+        with open(f"./results/log.csv", 'a', newline='') as f:
             wr = csv.writer(f)
-            wr.writerow(['standard', '-', '-', '-', '-', best, valid_acc, test_acc, best_gap, train_acc-valid_acc, self.log_time])
-        
-        with open(f"./results/csvs/{model_name}/{dataset}/success.csv", 'a', newline='') as f:
-            wr = csv.writer(f)
-            wr.writerow(['standard', best, test_acc, self.log_time])
+            wr.writerow([model_name, dataset, 'standard', init_lr, '-', '-', '-', '-', '-', '-', best, valid_acc, test_acc, best_gap, train_acc-valid_acc, self.log_time])
+
 
         return start_time, end_test_time
 
