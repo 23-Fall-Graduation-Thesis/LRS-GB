@@ -39,7 +39,7 @@ def arg_parse(parser):
     
     parser.add_argument('--norm', type=str, default='L2', help='weight calculation using L1 norm or L2 norm')
     
-    # parser.add_argument('--use_AutoLR', type=str2bool, default=False, help='when you using LRS_GB, both using AutoLR Condition?')
+    parser.add_argument('--opt', type=str2bool, default=False, help='using hyperopt?')
     
     return parser.parse_args()
 
@@ -67,8 +67,9 @@ if __name__ == '__main__':
     # dataset load
     trainloader, validloader, testloader, num_class = datasetload(conf['dataset'], conf['batch_size'])
     
-    print()
-    prnt(conf)
+    if not args.opt:
+        print()
+        prnt(conf)
 
     checkpt, board_name, log_time = set_loggers(conf)
 
@@ -88,7 +89,8 @@ if __name__ == '__main__':
     
     start_time, end_test_time = trainer.train_model(conf['epoch'], conf['lr'])
 
-    print("'\nEntire Training finish with,")
-    prnt(conf)
-    print("\nStart:\t", start_time)
-    print("End:\t", end_test_time)
+    if not args.opt:
+        print("\nEntire Training finish with,")
+        prnt(conf)
+        print("\nStart:\t", start_time)
+        print("End:\t", end_test_time)

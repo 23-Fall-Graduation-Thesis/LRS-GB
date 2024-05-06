@@ -177,17 +177,17 @@ class LRS_GB_Score_Trainer(TrainerBase):
             now_lr = lr_scheduler.decay_lr(epoch, now_lr)
 
         end_time = datetime.now().strftime('%m-%d_%H%M%S')
-        print('\nFinish training at', end_time)
+        #print('\nFinish training at', end_time)
         
         start_test_time = datetime.now().strftime('%m-%d_%H%M%S')
-        print('\nStart testing at', start_test_time)
+        #print('\nStart testing at', start_test_time)
         
         test_loss, test_acc = self.test()
         print('Load {}th epoch'.format(best_epoch))
         print('test loss:{:.3f}'.format(test_loss), 'acc:{:.2f}'.format(test_acc))
         
         end_test_time = datetime.now().strftime('%m-%d_%H%M%S')
-        print('\nFinish training at', end_test_time)
+        #print('\nFinish training at', end_test_time)
 
         writer = SummaryWriter(f"./results/log/{self.board_name}")
         
