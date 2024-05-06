@@ -57,9 +57,8 @@ def objective(search_space):
 
     line = None
     for raw_line in proc.stdout:
-        print(type(raw_line))
-        line = raw_line.strip()  # 양쪽 공백 제거
-        # 마지막 줄까지 읽기
+        # print(type(raw_line))
+        line = raw_line.strip()
 
     if line is not None and line.startswith("t"):
         fields = line.split(':')
