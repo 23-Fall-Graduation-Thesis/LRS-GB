@@ -40,6 +40,10 @@ def set_loggers(conf):
             setting = f"lr{conf['lr']}/max{round(conf['max_f'],3)}_min{round(conf['min_f'],3)}_K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['bound']}_{conf['thr_init_score']}"
             if conf['increase_bound']:
                 setting += '_increase'
+        elif conf['mode']=='GBweva':
+            setting = f"lr{conf['lr']}/K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['bound']}_{conf['thr_init_score']}"
+            if conf['increase_bound']:
+                setting += '_increase'
 
         os.makedirs(f"./model/weight/{conf['mode']}/{conf['model']}", exist_ok=True)
         checkpt = f"./model/weight/{conf['mode']}/{conf['model']}/{conf['dataset']}_{log_time}.pt"

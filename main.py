@@ -10,6 +10,7 @@ from trainer.Standard_Trainer import Standard_Trainer
 from trainer.AutoLR_Trainer import AutoLR_Trainer
 from trainer.LRS_GB_Trainer import *
 from trainer.Auto_Start_GB_Trainer import Auto_Start_GB_Score_Trainer
+from trainer.GB_with_Weva_Trainer import GB_with_Weva_Trainer
 import random
 
 def arg_parse(parser):
@@ -24,7 +25,7 @@ def arg_parse(parser):
     parser.add_argument('--pretrain', type=str2bool, nargs='?', const=True, default=False, help="Pretrain")
 
     # Fine-tuning Options
-    parser.add_argument('--mode', type=str, default='standard', help='Standard(standard), LRS-GB(GB), AutoLR(auto), Auto-start-GB(autoGB)')
+    parser.add_argument('--mode', type=str, default='standard', help='Standard(standard), LRS-GB(GB), AutoLR(auto), Auto-start-GB(autoGB), GB-with-weva(GBweva)')
     parser.add_argument('--model_path', type=str, default='', help='pretrained model path')
 
     parser.add_argument('--max_f', default=0.05, type=float, help='max_f for AutoLR')
@@ -84,6 +85,8 @@ if __name__ == '__main__':
         trainer = LRS_GB_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     elif conf['mode'] == 'autoGB':
         trainer = Auto_Start_GB_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
+    elif conf['mode'] == 'GBweva':
+        trainer = GB_with_Weva_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     else :
         pass
     

@@ -300,4 +300,60 @@ class LRSGBwithAutoLRInitTargetWeight(TargetWevaBase):
             self.target_init_weva = [max(x, y) for x, y in zip(self.target_init_weva, try_target_init_weva)]
 
             return self.target_init_weva
-                    
+
+
+class LRSGBwithTargetWeight(TargetWevaBase):
+    def __init__(self):
+        pass
+    
+    def init(self, K, scale_factor, bound):
+        super().__init__()
+        self.K = K
+        self.scale_factor = scale_factor
+        self.bound = bound
+
+
+    def cal_target_weva(self, weva_table, n_epoch, all_epoch):
+        now_weva = weva_table[-1][:-1]
+        target_weva = []
+        
+        # 단순하게 그냥 나눔
+        for i in range(len(now_weva)):
+            target_weva.append(self.gen_bound[i]/all_epoch) 
+            
+        return target_weva
+        
+    def cal_target_init_weva(self, init_diff_table, n_epoch, all_epoch, param_num_list):
+        if len(init_diff_table) <= 1:
+            # 새로 target init weight variation을 계산해야 하는 경우
+            now_init_diff = init_diff_table[-1]
+            # print(now_init_diff)
+            self.gen_bound = []
+            self.target_weva = []
+
+            for i, diff_list in enumerate(now_init_diff[:-1]):
+                n = param_num_list[i]
+                K = self.K * pow(self.scale_factor, int(i/2))
+                # print(K)
+
+                if self.bound == 'diff':
+                    target_temp = []
+                    for diff in diff_list:
+                        norms = torch.norm(diff, p=2, dim=(1,2,3), keepdim=True) # 일단 지금은 L2 norm이라 이렇게 맞춤 -> L1 norm일 경우 여기와 diff to weva 수정 필요
+                        # target_temp.append(diff * (1.0 / torch.maximum(torch.tensor(1.0, device=norms.device), norms / K)))
+                        #NOTE: 제한된 바운드를 구한거니까 여기도 바로 k값을 그대로 적용
+                        target_temp.append(diff * (1.0 / (norms / K)))
+        
+                    self.gen_bound.append(diff_to_weva(target_temp, n))
+                    self.target_weva.append(diff_to_weva(target_temp, n)/all_epoch)
+
+                elif self.bound == 'weva':
+                    weva = diff_to_weva(diff_list, n)
+                    # target_init_weva.append(weva * (1.0 / torch.maximum(torch.tensor(1.0), weva / K)))
+                    # self.target_init_weva.append(min(weva, K))
+                    #NOTE: 제한된 바운드를 구한거니까 k값을 그대로 적용
+                    self.gen_bound.append(K)
+                    self.target_weva.append(K/all_epoch)
+                    # weva 자체가 norm이기 때문에 bound를 적용하면, 그냥 계산된 오름차순이 generalization bound가 됨
+
+            return self.target_weva
