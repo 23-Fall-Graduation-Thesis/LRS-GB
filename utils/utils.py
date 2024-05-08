@@ -30,24 +30,24 @@ def set_loggers(conf):
         if conf['mode']=='standard':
             setting = f"lr{conf['lr']}"
         elif conf['mode']=='GB':
+            setting = f"lr{conf['lr']}_K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['bound']}_{conf['thr_init_score']}"
             if conf['increase_bound']:
-                setting = f"lr{conf['lr']}/K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['bound']}_{conf['thr_init_score']}_increase"
-            else:
-                setting = f"lr{conf['lr']}/K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['bound']}_{conf['thr_init_score']}"
+                setting += '_increase'
         elif conf['mode']=='auto':
-            setting = f"lr{conf['lr']}/max{round(conf['max_f'],3)}_min{round(conf['min_f'],3)}"
+            setting = f"lr{conf['lr']}_max{round(conf['max_f'],3)}_min{round(conf['min_f'],3)}"
         elif conf['mode']=='autoGB':
-            setting = f"lr{conf['lr']}/max{round(conf['max_f'],3)}_min{round(conf['min_f'],3)}_K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['bound']}_{conf['thr_init_score']}"
+            setting = f"lr{conf['lr']}_max{round(conf['max_f'],3)}_min{round(conf['min_f'],3)}_K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['bound']}_{conf['thr_init_score']}"
             if conf['increase_bound']:
-                setting += '_increase'
+                setting += f"_increase{conf['inc_type']}"
         elif conf['mode']=='GBweva':
-            setting = f"lr{conf['lr']}/K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['bound']}_{conf['thr_init_score']}"
+            setting = f"lr{conf['lr']}_K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['bound']}_{conf['thr_init_score']}"
             if conf['increase_bound']:
-                setting += '_increase'
+                setting += f"_increase{conf['inc_type']}"
 
-        os.makedirs(f"./model/weight/{conf['mode']}/{conf['model']}", exist_ok=True)
-        checkpt = f"./model/weight/{conf['mode']}/{conf['model']}/{conf['dataset']}_{log_time}.pt"
-        board_name = f"{conf['mode']}/{conf['model']}/{conf['dataset']}_{setting}"
+        os.makedirs(f"./model/weight/{conf['model']}/{conf['dataset']}/{conf['mode']}/", exist_ok=True)
+        os.makedirs(f"./results/tensor_log/{conf['model']}/{conf['dataset']}/{conf['mode']}", exist_ok=True)
+        checkpt = f"./model/weight/{conf['model']}/{conf['dataset']}/{conf['mode']}/{setting}_{log_time}.pt"
+        board_name = f"{conf['model']}/{conf['dataset']}/{conf['mode']}/{setting}_{log_time}"
 
         print('model:', conf['model'], ' dataset:', conf['dataset'], 'fine-tuning mode:', conf['mode'])
 

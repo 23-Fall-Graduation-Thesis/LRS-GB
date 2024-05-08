@@ -37,6 +37,7 @@ def arg_parse(parser):
 
     parser.add_argument('--bound', default='diff', type=str, help='diff or weva')
     parser.add_argument('--increase_bound', type=str2bool, default=False, help='')
+    parser.add_argument('--inc_type', default='log1', type=str, help='increase_bound type - linear(lin1, lin2), log(log1, log2), step')
     
     parser.add_argument('--norm', type=str, default='L2', help='weight calculation using L1 norm or L2 norm')
     

@@ -1,6 +1,6 @@
 from trainer.TrainerBase import TrainerBase
 from scheduler.AutoLR import AutoLR
-import copy, torch, math, csv
+import copy, torch, math, csv, os
 from datetime import datetime
 from torch.utils.tensorboard import SummaryWriter
 from utils.lr_utils import compute_weight_variation
@@ -15,7 +15,6 @@ class AutoLR_Trainer(TrainerBase):
         self.thr_score = conf['thr_score']
 
     def train_model(self, epochs, init_lr):
-        writer = SummaryWriter(f"./results/log/{self.board_name}")
         start_time = datetime.now().strftime('%m-%d_%H%M%S')
         print('\nStart training at', start_time)
     
@@ -37,6 +36,19 @@ class AutoLR_Trainer(TrainerBase):
         strict = False
 
         manager = Manager(self.board_name.replace('/', '_'), 9)
+        
+        # epoch-wise csv result
+        model_name = self.board_name.split('/')[0]
+        dataset = self.board_name.split('/')[1]
+        mode = self.board_name.split('/')[2]
+        setting = self.board_name.split('/')[-1]
+        os.makedirs(f"./results/csvs/{model_name}/{dataset}/{mode}", exist_ok=True)
+        epoch_log_filename = './results/csvs/' + model_name + '/' + dataset + '/' + mode + '/' + setting + '.csv'
+        with open(epoch_log_filename, 'a', newline='') as f:
+            wr = csv.writer(f)
+            # epoch, trial, target initweva, tryweva, try initweva, current learning rate
+            wr.writerow(['epoch', 'trial', 'target_weva', 'tryweva', 'current_lr'])
+
 
         for epoch in range(epochs):
             print('Epoch:{:04d}'.format(epoch+1))
@@ -57,8 +69,16 @@ class AutoLR_Trainer(TrainerBase):
             # repeat until condition is satisfied
             while Trial_error:
                 trial = trial + 1
-                if trial>100:
-                    Trial_error = False
+                if trial > 50:
+                    print('WARNING: trial is larger than 50')
+                    with open(f"./results/trial.csv", 'a', newline='') as f:
+                        wr = csv.writer(f)
+                        if self.increase_bound:
+                            wr.writerow(['autoGB', model_name, dataset, epoch, self.max_f, self.min_f, '-', self.thr_init_score, self.K, self.scale_factor, self.inc_type, self.log_time])
+                        else:
+                            wr.writerow(['autoGB', model_name, dataset, epoch, self.max_f, self.min_f, '-', self.thr_init_score, self.K, self.scale_factor, '-', self.log_time])
+                    exit()
+                
                 model_temp = copy.deepcopy(self.model)
                 model_try = copy.deepcopy(self.model)
                 
@@ -78,11 +98,9 @@ class AutoLR_Trainer(TrainerBase):
                 # check loss NaN
                 if math.isnan(train_loss):
                     print('WARNING: non-finite loss, ending training ')
-                    model_name = self.board_name.split('/')[1]
-                    dataset = self.board_name.split('/')[2].split('_')[0]
                     with open(f"./results/nan.csv", 'a', newline='') as f:
                         wr = csv.writer(f)
-                        wr.writerow([model_name, dataset, 'auto', self.max_f, self.min_f, self.thr_score, self.log_time])
+                        wr.writerow(['autoLR', model_name, dataset, epoch, self.max_f, self.min_f, self.thr_score, '-', '-', '-', '-', '-', weva_try[:-1], optimizer_try_lrs[:-1], self.log_time])
                     exit()
 
                 # Success (score >= threshold score)
@@ -109,31 +127,37 @@ class AutoLR_Trainer(TrainerBase):
                 # print current states
                 epoLfmt = ['{:.6f}']*(len(weva_try)-1)
                 epoLfmt =' '.join(epoLfmt)
-                values = []
+                values1 = []
                 for i in range(len(weva_try)-1):
-                    values.append(weva_try[i])
+                    values1.append(weva_try[i])
                 epoLfmt = '   WeVa :' + epoLfmt
-                print(epoLfmt.format(*values))
+                print(epoLfmt.format(*values1))
 
+                de_weva = lr_scheduler.target_weva_set[-1]
+                epoLfmt = ['{:.6f}'] * len(de_weva)
+                epoLfmt = ' '.join(epoLfmt)
+                values2 = []
+                for i in range(len(de_weva)):
+                    values2.append(de_weva[i])
+                epoLfmt = 'desWeVa :' + epoLfmt
                 if Trial_error == True:
-                    de_weva = lr_scheduler.target_weva_set[-1]
-                    epoLfmt = ['{:.6f}'] * len(de_weva)
-                    epoLfmt = ' '.join(epoLfmt)
-                    values = []
-                    for i in range(len(de_weva)):
-                        values.append(de_weva[i])
-                    epoLfmt = 'desWeVa :' + epoLfmt
-                    print(epoLfmt.format(*values))
+                    print(epoLfmt.format(*values2))
 
                 epoLfmt = ['{:.6f}'] * (len(optimizer_try_lrs)-1)
                 epoLfmt = ' '.join(epoLfmt)
-                values = []
+                values3 = []
                 for i in range(len(optimizer_try_lrs)-1):
-                    values.append(optimizer_try_lrs[i])
+                    values3.append(optimizer_try_lrs[i])
                 epoLfmt = '     LR :' + epoLfmt
-                print(epoLfmt.format(*values))
+                print(epoLfmt.format(*values3))
+                
+                if Trial_error == False:
+                    with open(epoch_log_filename, 'a', newline='') as f:
+                        wr = csv.writer(f)
+                        # epoch, trial, targetweva, tryweva, current learning rate
+                        wr.writerow([epoch, trial, list(values2), list(values1), list(values3)])
+                
                 print()
-
             
             
             if epoch % 5 == 0 or epoch == epochs-1:
@@ -169,7 +193,8 @@ class AutoLR_Trainer(TrainerBase):
         end_test_time = datetime.now().strftime('%m-%d_%H%M%S')
         #print('\nFinish training at', end_test_time)
 
-
+        writer = SummaryWriter(f"./results/tensor_log/{self.board_name}")
+        
         for epoch, (acc, loss) in enumerate(train_logs):
             writer.add_scalar('Acc/train', acc, epoch)
             writer.add_scalar('Loss/train', loss, epoch)
@@ -178,13 +203,11 @@ class AutoLR_Trainer(TrainerBase):
             writer.add_scalar('Acc/val', acc, epoch)
             writer.add_scalar('Loss/val', loss, epoch)
             writer.add_scalar('Generalization_GAP', gap, epoch)
-
-        model_name = self.board_name.split('/')[1]
-        dataset = self.board_name.split('/')[2].split('_')[0]
-
-        with open(f"./results/log.csv", 'a', newline='') as f:
+        
+        log_filename = './results/' + dataset + '_log.csv'
+        with open(log_filename, 'a', newline='') as f:
             wr = csv.writer(f)
-            wr.writerow([model_name, dataset, 'auto', init_lr, self.max_f, self.min_f, self.thr_score, '-', '-', '-', best, valid_acc, test_acc, best_gap, train_acc-valid_acc, self.log_time])
+            wr.writerow(['autoLR', model_name, dataset, self.max_f, self.min_f, self.thr_score, '-', '-', '-', '-', test_acc, best_gap, self.log_time])
 
         return start_time, end_test_time
         
