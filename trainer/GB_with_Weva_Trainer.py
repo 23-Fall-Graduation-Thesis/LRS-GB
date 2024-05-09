@@ -16,10 +16,12 @@ class GB_with_Weva_Trainer(TrainerBase):
         self.thr_init_score = conf['thr_init_score']
         self.K = conf['K']
         self.scale_factor = conf['scale_factor']
-        self.bound = conf['bound']
-        self.increase_bound = conf['increase_bound']
-        self.inc_type = conf['inc_type']
+        self.bound = None #TODO: delete
+        # self.bound = conf['bound']
+        # self.increase_bound = conf['increase_bound']
+        # self.inc_type = conf['inc_type']
         self.all_epoch = conf['epoch']
+        self.target_func = conf['target_func']
         
         if conf['norm'] == 'L1' :
             self.get_weva =  compute_L1_weight_variation
@@ -38,7 +40,8 @@ class GB_with_Weva_Trainer(TrainerBase):
         lr_success = []
         ntrial_success = []
 
-        lr_scheduler = GB_with_Weva(self.model, self.model_name, init_lr, self.thr_init_score, self.K, self.scale_factor, self.bound, self.all_epoch) #TODO instance arg_parser
+        # lr_scheduler = GB_with_Weva(self.model, self.model_name, init_lr, self.thr_init_score, self.K, self.scale_factor, self.bound, self.all_epoch, self.target_func) #TODO instance arg_parser
+        lr_scheduler = GB_with_Weva(self.model, self.model_name, init_lr, self.thr_init_score, self.K, self.scale_factor, self.bound, self.all_epoch, self.target_func) #TODO instance arg_parser
         self.optimizer = lr_scheduler.optimizer_binding(self.model, [init_lr])
         
         best = 0
@@ -63,9 +66,9 @@ class GB_with_Weva_Trainer(TrainerBase):
             wr.writerow(['epoch', 'trial', 'score', 'target_weva', 'tryweva', 'try_initweva', 'current_lr'])
 
         for epoch in range(epochs):
-            if self.increase_bound:
-                now_K = increase_K(epoch, epochs, self.K, self.inc_type)
-                lr_scheduler.weva_manager.K = now_K
+            # if self.increase_bound:
+            #     now_K = increase_K(epoch, epochs, self.K, self.inc_type)
+            #     lr_scheduler.weva_manager.K = now_K
             print('Epoch:{:04d}'.format(epoch+1))
             # if not strict :
             #     # decreasing thr_score 
@@ -89,10 +92,8 @@ class GB_with_Weva_Trainer(TrainerBase):
                     print('WARNING: trial is larger than 50')
                     with open(f"./results/trial.csv", 'a', newline='') as f:
                         wr = csv.writer(f)
-                        if self.increase_bound:
-                            wr.writerow(['autoGB', model_name, dataset, epoch, self.max_f, self.min_f, '-', self.thr_init_score, self.K, self.scale_factor, self.inc_type, self.log_time])
-                        else:
-                            wr.writerow(['autoGB', model_name, dataset, epoch, self.max_f, self.min_f, '-', self.thr_init_score, self.K, self.scale_factor, '-', self.log_time])
+                        wr.writerow(['GBweva', model_name, dataset, epoch, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.target_func, self.log_time])
+        
                     exit()
                 
                 model_temp = copy.deepcopy(self.model)
@@ -108,7 +109,8 @@ class GB_with_Weva_Trainer(TrainerBase):
                 init_diff_table.append(init_diff_try)
 
                 # if never caculated target init weva, 
-                lr_scheduler.set_initial_weva(init_diff_table, epoch, param_num_list)
+                # lr_scheduler.set_initial_weva(init_diff_table, epoch, param_num_list)
+                lr_scheduler.set_target_weva(init_diff_table, epoch, epochs, param_num_list)
                 Trial_error, init_score = lr_scheduler.try_lr_update(weva_try)
 
                 optimizer_try_lrs = lr_scheduler.get_lr(optimizer_try)
@@ -119,10 +121,8 @@ class GB_with_Weva_Trainer(TrainerBase):
                     with open(f"./results/nan.csv", 'a', newline='') as f:
                         wr = csv.writer(f)
                         # wr.writerow([self.model_name, self.dataset])
-                        if self.increase_bound:
-                            wr.writerow(['GBweva', model_name, dataset, epoch, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.inc_type, init_weva_try, weva_try[:-1], optimizer_try_lrs[:-1], self.log_time])
-                        else:
-                            wr.writerow(['GBweva', model_name, dataset, epoch, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, '-', init_weva_try, weva_try[:-1], optimizer_try_lrs[:-1], self.log_time])
+                        wr.writerow(['GBweva', model_name, dataset, epoch, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.target_func, init_weva_try, weva_try[:-1], optimizer_try_lrs[:-1], self.log_time])
+                        
                     exit()
 
                 # Success 
@@ -184,7 +184,6 @@ class GB_with_Weva_Trainer(TrainerBase):
                 print()
                 
             
-            
             if epoch % 5 == 0 or epoch == epochs-1:
                 valid_loss, valid_acc = self.validation()
                 valid_logs.append([epoch, valid_acc, valid_loss, train_acc-valid_acc])
@@ -233,9 +232,6 @@ class GB_with_Weva_Trainer(TrainerBase):
         log_filename = './results/' + dataset + '_log.csv'
         with open(log_filename, 'a', newline='') as f:
             wr = csv.writer(f)
-            if self.increase_bound:
-                wr.writerow(['GBweva', model_name, dataset, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.inc_type, test_acc, best_gap, self.log_time])
-            else:
-                wr.writerow(['GBweva', model_name, dataset, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, '-', test_acc, best_gap, self.log_time])
+            wr.writerow(['GBweva', model_name, dataset, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.target_func, test_acc, best_gap, self.log_time])
             
         return start_time, end_test_time

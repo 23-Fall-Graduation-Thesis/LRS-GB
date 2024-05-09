@@ -40,9 +40,10 @@ def set_loggers(conf):
             if conf['increase_bound']:
                 setting += f"_increase{conf['inc_type']}"
         elif conf['mode']=='GBweva':
-            setting = f"lr{conf['lr']}_K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['bound']}_{conf['thr_init_score']}"
-            if conf['increase_bound']:
-                setting += f"_increase{conf['inc_type']}"
+            # setting = f"lr{conf['lr']}_K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['bound']}_{conf['thr_init_score']}"
+            # if conf['increase_bound']:
+            #     setting += f"_increase{conf['inc_type']}"
+            setting = f"lr{conf['lr']}_K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['thr_init_score']}_{conf['target_func']}"
 
         os.makedirs(f"./model/weight/{conf['model']}/{conf['dataset']}/{conf['mode']}/", exist_ok=True)
         os.makedirs(f"./results/tensor_log/{conf['model']}/{conf['dataset']}/{conf['mode']}", exist_ok=True)

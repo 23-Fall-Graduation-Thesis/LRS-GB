@@ -3,7 +3,7 @@ from scheduler.SchedulerBase import SchedulerBase
 import torch.optim as optim
 
 class GB_with_Weva(SchedulerBase):
-    def __init__(self, model, model_name, init_lr, thr_init_score, K, scale_factor, bound, all_epoch, instances : Dict[str, str] = None):
+    def __init__(self, model, model_name, init_lr, thr_init_score, K, scale_factor, bound, all_epoch, target_func, instances : Dict[str, str] = None):
         if instances is None:
             instances = dict(
                 weva_method = "LRSGBwithTargetWeight",
@@ -18,18 +18,24 @@ class GB_with_Weva(SchedulerBase):
         self.gamma = 0.2
         self.cls_lr = 0.01
 
-        self.e_drop = 40
+        self.e_drop = 24 # 30의 0.8
         self.e_end = 50
         self.mlast = 3
 
-        self.weva_manager.init(K, scale_factor, bound)
+        self.weva_manager.init(K, scale_factor, bound, target_func)
         self.condition_manager.init(thr_init_score)
         self.target_weva_set = []
 
-    def set_initial_weva(self, init_diff_table, n_epoch, param_num_list):
+    # def set_initial_weva(self, init_diff_table, n_epoch, param_num_list):
+    #     if len(init_diff_table)<2:
+    #         print('setting epoch target weva')
+    #         target_weva = self.weva_manager.cal_target_init_weva(init_diff_table, n_epoch, self.all_epoch, param_num_list)
+    #         self.target_weva_set.append(target_weva)
+    
+    def set_target_weva(self, init_diff_table, n_epoch, all_epoch, param_num_list):
         if len(init_diff_table)<2:
             print('setting epoch target weva')
-            target_weva = self.weva_manager.cal_target_init_weva(init_diff_table, n_epoch, self.all_epoch, param_num_list)
+            target_weva = self.weva_manager.cal_target_weva(n_epoch, all_epoch, param_num_list)
             self.target_weva_set.append(target_weva)
                 
     
@@ -37,11 +43,12 @@ class GB_with_Weva(SchedulerBase):
         now_lr = lr_table[-1][:-1]
         now_weva = weva_table[-1][:-1]
 
-        target_weva = self.weva_manager.cal_target_weva(weva_table, n_epoch, self.all_epoch)
-        if not target_weva:
-            target_weva = self.target_weva_set[-1]
-        else:
-            self.target_weva_set.append(target_weva)
+        # target_weva = self.weva_manager.cal_target_weva(weva_table, n_epoch, self.all_epoch)
+        # if not target_weva:
+        #     target_weva = self.target_weva_set[-1]
+        # else:
+        #     self.target_weva_set.append(target_weva)
+        target_weva = self.target_weva_set[-1]
         
         target_lr = self.lr_manager.cal_target_lr(now_weva, now_lr, target_weva, self.cls_lr)
         
