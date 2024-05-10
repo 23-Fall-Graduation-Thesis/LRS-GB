@@ -207,7 +207,7 @@ class AutoLR_Trainer(TrainerBase):
         log_filename = './results/' + dataset + '_log.csv'
         with open(log_filename, 'a', newline='') as f:
             wr = csv.writer(f)
-            wr.writerow(['autoLR', model_name, dataset, self.max_f, self.min_f, self.thr_score, '-', '-', '-', '-', test_acc, best_gap, self.log_time])
+            wr.writerow(['autoLR', model_name, dataset, '-', self.max_f, self.min_f, self.thr_score, '-', '-', '-', '-', test_acc, best_gap, self.log_time])
 
         return start_time, end_test_time
         

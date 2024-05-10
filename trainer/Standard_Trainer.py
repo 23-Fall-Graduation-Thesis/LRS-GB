@@ -60,10 +60,10 @@ class Standard_Trainer(TrainerBase):
         model_name = self.board_name.split('/')[1]
         dataset = self.board_name.split('/')[2].split('_')[0]
         
-
-        with open(f"./results/log.csv", 'a', newline='') as f:
+        log_filename = './results/' + dataset + '_log.csv'
+        with open(log_filename, 'a', newline='') as f:
             wr = csv.writer(f)
-            wr.writerow([model_name, dataset, 'standard', init_lr, '-', '-', '-', '-', '-', '-', best, valid_acc, test_acc, best_gap, train_acc-valid_acc, self.log_time])
+            wr.writerow(['standard', model_name, dataset, init_lr, '-', '-', '-', '-', '-', '-', test_acc, best_gap, self.log_time])
 
 
         return start_time, end_test_time

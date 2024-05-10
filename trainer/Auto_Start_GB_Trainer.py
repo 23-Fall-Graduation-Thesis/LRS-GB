@@ -234,8 +234,8 @@ class Auto_Start_GB_Score_Trainer(TrainerBase):
         with open(log_filename, 'a', newline='') as f:
             wr = csv.writer(f)
             if self.increase_bound:
-                wr.writerow(['autoGB', model_name, dataset, self.max_f, self.min_f, '-', self.thr_init_score, self.K, self.scale_factor, self.inc_type, test_acc, best_gap, self.log_time])
+                wr.writerow(['autoGB', model_name, dataset, '-', self.max_f, self.min_f, '-', self.thr_init_score, self.K, self.scale_factor, self.inc_type, test_acc, best_gap, self.log_time])
             else:
-                wr.writerow(['autoGB', model_name, dataset, self.max_f, self.min_f, '-', self.thr_init_score, self.K, self.scale_factor, '-', test_acc, best_gap, self.log_time])
+                wr.writerow(['autoGB', model_name, dataset, '-', self.max_f, self.min_f, '-', self.thr_init_score, self.K, self.scale_factor, '-', test_acc, best_gap, self.log_time])
 
         return start_time, end_test_time

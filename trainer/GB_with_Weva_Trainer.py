@@ -232,6 +232,6 @@ class GB_with_Weva_Trainer(TrainerBase):
         log_filename = './results/' + dataset + '_log.csv'
         with open(log_filename, 'a', newline='') as f:
             wr = csv.writer(f)
-            wr.writerow(['GBweva', model_name, dataset, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.target_func, test_acc, best_gap, self.log_time])
+            wr.writerow(['GBweva', model_name, dataset, '-', '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.target_func, test_acc, best_gap, self.log_time])
             
         return start_time, end_test_time

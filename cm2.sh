@@ -7,10 +7,12 @@ scale_values="1.25 1.5 2"
 init_score="0.97"
 
 ############### GB weva hyperOPT #################
-for dataset in $datasets
-do
-    python hptune.py --epoch=50 --dataset=$dataset --MIN_K=1.0 --MAX_K=40.0 --MIN_scale_factor=1.0 --MAX_scale_factor=5.0 --max-evals=20
-done
+# for dataset in $datasets
+# do
+#     python hptune.py --epoch=50 --dataset=$dataset --model=$model --mode=$mode --MIN_K=1.0 --MAX_K=40.0 --MIN_scale_factor=1.0 --MAX_scale_factor=5.0 --max-evals=20
+# done
+
+python main.py --epoch=50 --dataset="cub" --model=$model --mode=$mode --K=11.749325261051407 --scale_factor=3.2781245211344094
 
 
 # for dataset in $datasets
