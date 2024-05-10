@@ -1,4 +1,5 @@
 import argparse
+from pyprint import prnt
 from hyperopt import fmin, hp, tpe, Trials
 import subprocess as sp
 from utils.utils import str2bool
@@ -77,11 +78,12 @@ if __name__ == '__main__':
 
     space = {}
     if args.mode == "auto":
-        space["min_f"] = hp.loguniform("min_f", args.MIN_min_f, args.MAX_min_f)
-        space["max_f"] = hp.loguniform("max_f", args.MIN_max_f, args.MAX_max_f)
+        space["min_f"] = hp.uniform("min_f", args.MIN_min_f, args.MAX_min_f)
+        space["max_f"] = hp.uniform("max_f", args.MIN_max_f, args.MAX_max_f)
     else:
-        space["K"] = hp.loguniform("K", args.MIN_K, args.MAX_K)
-        space["scale_factor"] = hp.loguniform("scale_factor", args.MIN_scale_factor, args.MAX_scale_factor)
+        space["K"] = hp.uniform("K", args.MIN_K, args.MAX_K)
+        space["scale_factor"] = hp.uniform("scale_factor", args.MIN_scale_factor, args.MAX_scale_factor)
+    
     
     trials = Trials()
     best_params = fmin(objective, space=space, algo=tpe.suggest, max_evals=int(args.max_evals), trials=trials)
