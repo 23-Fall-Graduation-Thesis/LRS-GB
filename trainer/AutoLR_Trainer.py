@@ -13,7 +13,8 @@ class AutoLR_Trainer(TrainerBase):
         self.max_f = conf['max_f']
         self.min_f = conf['min_f']
         self.thr_score = conf['thr_score']
-
+        self.all_epoch = conf['epoch']
+        
     def train_model(self, epochs, init_lr):
         start_time = datetime.now().strftime('%m-%d_%H%M%S')
         print('\nStart training at', start_time)
@@ -27,7 +28,7 @@ class AutoLR_Trainer(TrainerBase):
         valid_logs = []
 
         # setting scheduler & optimizer
-        lr_scheduler = AutoLR(self.model, self.model_name, init_lr, self.max_f, self.min_f, self.thr_score)
+        lr_scheduler = AutoLR(self.model, self.model_name, init_lr, self.max_f, self.min_f, self.thr_score, self.all_epoch)
         self.optimizer = lr_scheduler.optimizer_binding(self.model, [init_lr])
         
         best = 0
@@ -35,7 +36,7 @@ class AutoLR_Trainer(TrainerBase):
         bad_count = 0
         strict = False
 
-        manager = Manager(self.board_name.replace('/', '_'), 9)
+        # manager = Manager(self.board_name.replace('/', '_'), 9)
         
         # epoch-wise csv result
         model_name = self.board_name.split('/')[0]
@@ -73,10 +74,7 @@ class AutoLR_Trainer(TrainerBase):
                     print('WARNING: trial is larger than 50')
                     with open(f"./results/trial.csv", 'a', newline='') as f:
                         wr = csv.writer(f)
-                        if self.increase_bound:
-                            wr.writerow(['autoGB', model_name, dataset, epoch, self.max_f, self.min_f, '-', self.thr_init_score, self.K, self.scale_factor, self.inc_type, self.log_time])
-                        else:
-                            wr.writerow(['autoGB', model_name, dataset, epoch, self.max_f, self.min_f, '-', self.thr_init_score, self.K, self.scale_factor, '-', self.log_time])
+                        wr.writerow(['autoLR', model_name, dataset, epoch, self.max_f, self.min_f, self.thr_score, '-', '-', '-', '-', self.log_time])
                     exit()
                 
                 model_temp = copy.deepcopy(self.model)
@@ -112,7 +110,7 @@ class AutoLR_Trainer(TrainerBase):
                     weva_success.append(copy.deepcopy(weva_try))
                     lr_success.append(optimizer_try_lrs)
                     ntrial_success.append(trial)
-                    manager.record(epoch, now_lr[:-1], weva_try[:-1])
+                    # manager.record(epoch, now_lr[:-1], weva_try[:-1])
                 else:
                     weva_table.append(weva_try)
                     lr_table.append(optimizer_try_lrs)

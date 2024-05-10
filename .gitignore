@@ -18,3 +18,4 @@ model/weight
 ref/
 
 results/
+*.sh

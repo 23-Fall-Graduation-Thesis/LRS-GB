@@ -8,8 +8,6 @@ from utils.utils import *
 from model.pretrained_models import select_model
 from trainer.Standard_Trainer import Standard_Trainer
 from trainer.AutoLR_Trainer import AutoLR_Trainer
-from trainer.LRS_GB_Trainer import *
-from trainer.Auto_Start_GB_Trainer import Auto_Start_GB_Score_Trainer
 from trainer.GB_with_Weva_Trainer import GB_with_Weva_Trainer
 import random
 
@@ -60,7 +58,6 @@ def set_seed(seed=2023):
 if __name__ == '__main__':
     # arguments parsing
     args = arg_parse(argparse.ArgumentParser())
-    
     # random seed
     set_seed()
     

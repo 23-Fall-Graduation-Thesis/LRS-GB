@@ -19,7 +19,7 @@ class GB_with_Weva(SchedulerBase):
         self.cls_lr = 0.01
 
         self.e_drop = self.all_epoch * 0.8 # 30의 0.8
-        self.e_end = 50
+        self.e_end = self.all_epoch
         self.mlast = 3
 
         self.weva_manager.init(K, scale_factor, bound, target_func)
@@ -59,7 +59,6 @@ class GB_with_Weva(SchedulerBase):
         check_GB, init_score = self.condition_manager.check_condition(weva_try, self.target_weva_set)
         if check_GB:
             Trial_error = False
-            # TODO: weight decay
         else:
             Trial_error = True
         return Trial_error, init_score

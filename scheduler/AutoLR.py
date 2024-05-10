@@ -2,7 +2,7 @@ from scheduler.SchedulerBase import SchedulerBase
 import torch.optim as optim
 
 class AutoLR(SchedulerBase):
-    def __init__(self, model, model_name, init_lr, max_f, min_f, thr_score):
+    def __init__(self, model, model_name, init_lr, max_f, min_f, thr_score, all_epoch):
         instances = dict(
             weva_method = "AutoLRTargetWeva",
             lr_method = "AutoLRTargetLR",
@@ -11,12 +11,14 @@ class AutoLR(SchedulerBase):
         super().__init__(model, model_name, init_lr, instances)
         self.target_weva_set = []
 
+        self.all_epoch = all_epoch
+        
         self.scale = 1000000
         self.gamma = 0.2
         self.cls_lr = 0.001
 
-        self.e_drop = 40
-        self.e_end = 50
+        self.e_drop = self.all_epoch * 0.8
+        self.e_end = self.all_epoch
         self.mlast = 3
 
         self.weva_manager.init(max_f, min_f)

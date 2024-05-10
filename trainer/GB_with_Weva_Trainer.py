@@ -51,7 +51,7 @@ class GB_with_Weva_Trainer(TrainerBase):
 
         train_logs = []
         valid_logs = []
-        manager = Manager(self.board_name.replace('/', '_'), 9)
+        # manager = Manager(self.board_name.replace('/', '_'), 9)
         
         # epoch-wise csv result
         model_name = self.board_name.split('/')[0]
@@ -133,7 +133,7 @@ class GB_with_Weva_Trainer(TrainerBase):
                     weva_success.append(copy.deepcopy(weva_try))
                     lr_success.append(optimizer_try_lrs)
                     ntrial_success.append(trial)
-                    manager.record(epoch, now_lr[:-1], weva_try[:-1])
+                    # manager.record(epoch, now_lr[:-1], weva_try[:-1])
                 else:
                     weva_table.append(weva_try)
                     init_weva_table.append(init_weva_try)
