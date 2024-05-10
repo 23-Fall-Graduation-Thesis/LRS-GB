@@ -18,7 +18,7 @@ class GB_with_Weva(SchedulerBase):
         self.gamma = 0.2
         self.cls_lr = 0.01
 
-        self.e_drop = 24 # 30의 0.8
+        self.e_drop = self.all_epoch * 0.8 # 30의 0.8
         self.e_end = 50
         self.mlast = 3
 

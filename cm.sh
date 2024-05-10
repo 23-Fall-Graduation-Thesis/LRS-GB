@@ -1,20 +1,35 @@
 # mode="autoGB auto GB standard"
-mode="autoGB"
-model="resnet18"
+model="resnet50"
 datasets="cifar100 cub cars"
-k_values="1.95 2.6 3.9 7.8 15.6 23.4 31.2"
-scale_values="1.25 1.5 2"
-init_score="0.97"
+# k_values="1.95 2.6 3.9 7.8 15.6 23.4 31.2"
+# scale_values="1.25 1.5 2"
+# init_score="0.97"
 
-############### 여기는 autoGB 코드 #################
-k="1.95"
-s="1.25"
-datasets="cub"
+########### standard ############
+mode="standard"
+for dataset in $datasets
+do
+    python main.py --dataset=$dataset --mode=$mode --model=$model --lr=0.001
+    python main.py --dataset=$dataset --mode=$mode --model=$model --lr=0.005
+    python main.py --dataset=$dataset --mode=$mode --model=$model --lr=0.01
+done
 
-python main.py --dataset=$datasets --mode=GB --epoch=5 --model=$model --K=$k --scale_factor=$s --bound=weva --thr_init_score=$init_score --increase_bound=False --max_f=0.1 --min_f=1.0
-# python main.py --dataset=$datasets --mode=auto --model=$model --K=$k --scale_factor=$s --bound=weva --thr_init_score=$init_score --increase_bound=False --max_f=0.1 --min_f=1.0
-# python main.py --dataset=$datasets --mode=autoGB --model=$model --K=$k --scale_factor=$s --bound=weva --thr_init_score=$init_score --increase_bound=False --max_f=0.1 --min_f=1.0
-# python main.py --dataset=$datasets --mode=GBweva --model=$model --K=$k --scale_factor=$s --bound=weva --thr_init_score=$init_score --increase_bound=False --max_f=0.1 --min_f=1.0
+########## AutoLR ###########
+mode="auto"
+for dataset in $datasets
+do
+    python main.py --dataset=$dataset --mode=$mode --model=$model --max_f=0.1 --min_f=1.0
+    python main.py --dataset=$dataset --mode=$mode --model=$model --max_f=0.1 --min_f=2.0
+    python main.py --dataset=$dataset --mode=$mode --model=$model --max_f=0.1 --min_f=4.0
+    python main.py --dataset=$dataset --mode=$mode --model=$model --max_f=0.2 --min_f=1.0
+    python main.py --dataset=$dataset --mode=$mode --model=$model --max_f=0.2 --min_f=2.0
+    python main.py --dataset=$dataset --mode=$mode --model=$model --max_f=0.2 --min_f=4.0
+    python main.py --dataset=$dataset --mode=$mode --model=$model --max_f=0.05 --min_f=1.0
+    python main.py --dataset=$dataset --mode=$mode --model=$model --max_f=0.05 --min_f=2.0
+    python main.py --dataset=$dataset --mode=$mode --model=$model --max_f=0.05 --min_f=4.0
+done
+
+
 
 # for dataset in $datasets
 # do

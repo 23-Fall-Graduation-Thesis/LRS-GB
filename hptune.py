@@ -1,5 +1,5 @@
 import argparse
-from pyprint import prnt
+from pyprnt import prnt
 from hyperopt import fmin, hp, tpe, Trials
 import subprocess as sp
 from utils.utils import str2bool
@@ -13,7 +13,7 @@ def arg_parse(parser):
     parser.add_argument('--dataset', default='cifar10', help='Dataset type')
     parser.add_argument('--model', default='resnet18', help='Model type')
 
-    parser.add_argument('--mode', type=str, default='standard', help='Standard(standard), LRS-GB(GB), AutoLR(auto), Auto-start-GB(autoGB)')
+    parser.add_argument('--mode', type=str, default='standard', help='Standard(standard), LRS-GB(GBweva), AutoLR(auto), Auto-start-GB(autoGB)')
     parser.add_argument('--increase_bound', type=str2bool, default=False, help='')
     parser.add_argument('--bound', default='weva', type=str, help='diff or weva')
     parser.add_argument('--norm', type=str, default='L2', help='weight calculation using L1 norm or L2 norm')
