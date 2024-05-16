@@ -39,7 +39,7 @@ def set_loggers(conf):
             setting = f"lr{conf['lr']}_max{round(conf['max_f'],3)}_min{round(conf['min_f'],3)}_K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['bound']}_{conf['thr_init_score']}"
             if conf['increase_bound']:
                 setting += f"_increase{conf['inc_type']}"
-        elif conf['mode']=='GBweva':
+        elif conf['mode']=='GBweva' or conf['mode']=='GBwevaScore':
             # setting = f"lr{conf['lr']}_K{round(conf['K'],3)}_scale{round(conf['scale_factor'],3)}_{conf['bound']}_{conf['thr_init_score']}"
             # if conf['increase_bound']:
             #     setting += f"_increase{conf['inc_type']}"

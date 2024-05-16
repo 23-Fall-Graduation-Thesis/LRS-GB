@@ -52,6 +52,10 @@ class GB_with_Weva_Score(SchedulerBase):
         target_weva = self.target_weva_set[-1]
         
         target_lr = self.lr_manager.cal_target_lr(now_weva, now_lr, target_weva, self.cls_lr)
+        padding = self.condition_manager.get_layer_score()
+        for i in range(len(now_lr)):
+            if padding[i]:
+                target_lr[i] = now_lr[i]
         
         return target_lr
     
