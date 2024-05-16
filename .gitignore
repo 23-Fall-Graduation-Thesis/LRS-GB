@@ -1,6 +1,5 @@
 test.ipynb
 temp.py
-command.sh
 
 data/cifar10/
 data/cifar100/
@@ -19,3 +18,4 @@ model/weight
 ref/
 
 results/
+*.sh

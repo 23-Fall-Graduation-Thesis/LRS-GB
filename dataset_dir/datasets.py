@@ -58,8 +58,7 @@ def Cifar100(batch_size):
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
     
-    train_dataset = torchvision.datasets.CIFAR100(root='./data/cifar100', train=True, 
-                                                  download=True, transform=transform)
+    train_dataset = torchvision.datasets.CIFAR100(root='./data/cifar100', train=True, download=True, transform=transform)
     dataset_size = len(train_dataset)
     train_size = int(dataset_size * 0.8)
     valid_size = dataset_size - train_size

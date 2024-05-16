@@ -128,11 +128,13 @@ def compute_L1_weight_difference_and_variation(modelA, modelB, layer_name_dict):
     
     return variation_calc, diff_calc, param_num_list
     
-
+# L2 norm
 def diff_to_weva(diff_list, n):
     temp = 0
     for diff in diff_list:
+        # temp += torch.norm(diff, p=1).detach().numpy() # L1 Norm
         temp += torch.pow(torch.norm(diff, 2), 2).detach().numpy()
+
     weva = temp**0.5/n*SCALE
     
     return weva
@@ -186,3 +188,30 @@ def get_linf_norm(w):
     if len(w.shape) == 4:
         axes=[1, 2, 3]
     return torch.max(torch.sum(torch.abs(w), dim=axes))
+
+def increase_K(cur_epoch, tot_epoch, init_K, inc_type='log1'):
+    cur_epoch += 1
+    
+    if k_mode == 'lin1': # Linear
+        ## 1. y = 1/epoch * x
+        K = init_K*(cur_epoch)/tot_epoch
+    elif k_mode == 'lin2': # upper Linear
+        ## 2. y = 1/(2*epoch-2)*x + (epoch-2)/(2*epoch-2)
+        K = init_K * (cur_epoch + tot_epoch - 2)/(2 * tot_epoch - 2)
+    elif k_mode == 'log1': # Log
+        ## 1. y = 1/ln(epoch) * ln(x+1)
+        K = init_K * 1 / np.log(tot_epoch + 1) * np.log(cur_epoch + 1)
+    elif k_mode == 'log2': # upper Log
+        # 2. y = 1/(2*ln(epoch)) * ln(x) + 1/2
+        K = init_K * 0.5 / np.log(tot_epoch) * np.log(cur_epoch) + 0.5
+    elif k_mode == 'step': # Step
+        ## y = 0.5 (x < 0.5epoch) / 0.75 (0.5epoch <= x < 0.8epoch) / 1.0 (0.8epoch <= x)
+        if cur_epoch < int(0.5*tot_epoch):
+            K = init_K * 0.5
+        elif cur_epoch < int(0.8*tot_epoch):
+            K = init_K * 0.75
+        else:
+            K = init_K
+
+    print('current epoch:', cur_epoch, '\tK: ',K)
+    return K

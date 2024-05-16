@@ -60,101 +60,6 @@ class AutoLRCondition(ConditionBase):
             
         return 1.0 - diff / len(A) ** 2 * 2
 
-# Trial1
-class GBwithAutoLRcondition(ConditionBase):
-    def __init__(self):
-        pass
-    
-    
-    def init(self, thr_score, constraints):
-        super().__init__()
-        self.thr_score = thr_score
-        self.constraints = constraints
-
-
-    def check_condition(self, weva_try, init_weva_try) :
-        check_autoLR, check_GB = True, True
-        weva_idx = self.sigma_function(weva_try[:-1])
-        score = self.get_score(weva_idx)
-        for i in range(len(self.constraints)):
-            if init_weva_try[i] > self.constraints[i]:
-                check_GB = False
-                break    
-
-        if score < self.thr_score:
-            check_autoLR = False
-        
-        return check_autoLR, check_GB, score
-    
-    
-    def adjust_condition(self):
-        pass
-    
-    
-    def get_condition(self):
-        return self.thr_score, self.constraints
-    
-    
-    def get_score(self, A):
-        diff = 0.
-        for index, element in enumerate(A):
-            diff += abs(index - element)
-        
-        return 1.0 - diff / len(A) ** 2 * 2
-    
-# Trial2
-class GBScorewithAutoLRcondition(ConditionBase):
-    def __init__(self):
-        pass
-    
-    
-    def init(self, thr_score, thr_init_score):
-        super().__init__()
-        self.thr_score = thr_score
-        self.thr_init_score = thr_init_score
-
-
-    def check_condition(self, weva_try, init_weva_try, init_weva_target) :
-        check_autoLR, check_GB = True, True
-        weva_idx = self.sigma_function(weva_try[:-1])
-        score = self.get_score(weva_idx) # AutoLR score
-        # print(init_weva_target, init_weva_try)
-        if len(init_weva_target) > 0:
-            init_weva_target = init_weva_target[-1]
-            init_score = self.get_init_score(init_weva_try[:-1], init_weva_target) # LRS_score
-        else:
-            init_score = 1
-
-        if score < self.thr_score:
-            check_autoLR = False
-        if init_score < self.thr_init_score:
-            check_GB = False
-        
-        return check_autoLR, check_GB, score, init_score
-    
-    
-    def adjust_condition(self):
-        pass
-    
-    
-    def get_condition(self):
-        return self.thr_score, self.constraints
-    
-    
-    def get_score(self, A):
-        diff = 0.
-        for index, element in enumerate(A):
-            diff += abs(index - element)
-        
-        return 1.0 - diff / len(A) ** 2 * 2
-    
-    def get_init_score(self, init_weva, target_init_weva):
-        score = 0.
-        for cur, target in zip(init_weva, target_init_weva):
-            err = max(0, cur-target)
-            score += 1/(1+err)
-        score /= len(init_weva)
-        return score
 
 # only GB - score
 class LRSGBCondition(ConditionBase):
@@ -193,4 +98,46 @@ class LRSGBCondition(ConditionBase):
             err = max(0, cur-target)
             score += 1/(1+err)
         score /= len(init_weva)
+        return score
+
+# new score of GB weva
+class GBwevaCondition(ConditionBase):
+    def __init__(self):
+        pass
+
+    def init(self, thr_init_score, lamb=5):
+        super().__init__()
+        self.thr_init_score = thr_init_score
+        self.lamb = lamb
+
+    def check_condition(self, init_weva_try, target_init_weva_set) :
+        check_GB = True
+        if len(target_init_weva_set) > 0:
+            target_init_weva = target_init_weva_set[-1]
+            init_score = self.get_init_score(init_weva_try[:-1], target_init_weva) # LRS_score
+        else:
+            raise ValueError("target init weva must be calculated before check condition")
+
+        if init_score < self.thr_init_score:
+            check_GB = False
+        
+        return check_GB, init_score
+    
+    
+    def adjust_condition(self):
+        pass
+    
+    
+    def get_condition(self):
+        return self.thr_init_score
+    
+    
+    def get_init_score(self, init_weva, target_init_weva):
+        score = 1.
+        for cur, target in zip(init_weva, target_init_weva):
+            if cur < target:
+                err = (target-cur)/target
+            else:
+                err = min(self.lamb * (cur-target)/target, 1)
+            score = min(score, 1 - err)
         return score

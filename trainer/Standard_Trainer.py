@@ -16,7 +16,7 @@ class Standard_Trainer(TrainerBase):
         start_time = datetime.now().strftime('%m-%d_%H%M%S')
         print('\nStart training at', start_time)
         
-        best = 99999999
+        best = 0
         best_epoch = 0
         bad_count = 0
         for epoch in range(epochs):
@@ -45,28 +45,26 @@ class Standard_Trainer(TrainerBase):
                 #     break
             
         end_time = datetime.now().strftime('%m-%d_%H%M%S')
-        print('\nFinish training at', end_time)
+        #print('\nFinish training at', end_time)
         
         start_test_time = datetime.now().strftime('%m-%d_%H%M%S')
-        print('\nStart testing at', start_test_time)
+        #print('\nStart testing at', start_test_time)
         
         test_loss, test_acc = self.test()
         print('Load {}th epoch'.format(best_epoch))
         print('test loss:{:.3f}'.format(test_loss), 'acc:{:.2f}'.format(test_acc))
         
         end_test_time = datetime.now().strftime('%m-%d_%H%M%S')
-        print('\nFinish training at', end_test_time)
+        #print('\nFinish training at', end_test_time)
 
         model_name = self.board_name.split('/')[1]
         dataset = self.board_name.split('/')[2].split('_')[0]
         
-        with open(f"./results/csvs/{model_name}/{dataset}/result.csv", 'a', newline='') as f:
+        log_filename = './results/' + dataset + '_log.csv'
+        with open(log_filename, 'a', newline='') as f:
             wr = csv.writer(f)
-            wr.writerow(['standard', '-', '-', '-', '-', best, valid_acc, test_acc, best_gap, train_acc-valid_acc, self.log_time])
-        
-        with open(f"./results/csvs/{model_name}/{dataset}/success.csv", 'a', newline='') as f:
-            wr = csv.writer(f)
-            wr.writerow(['standard', best, test_acc, self.log_time])
+            wr.writerow(['standard', model_name, dataset, init_lr, '-', '-', '-', '-', '-', '-', test_acc, best_gap, self.log_time])
+
 
         return start_time, end_test_time
 
