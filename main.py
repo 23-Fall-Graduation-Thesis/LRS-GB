@@ -10,6 +10,7 @@ from trainer.Standard_Trainer import Standard_Trainer
 from trainer.AutoLR_Trainer import AutoLR_Trainer
 from trainer.GB_with_Weva_Trainer import GB_with_Weva_Trainer
 from trainer.GB_with_Weva_Score_Trainer import GB_with_Weva_Score_Trainer
+from trainer.GB_with_Weva_Score_Sum_Trainer import GB_with_Weva_Score_Sum_Trainer
 import random
 
 def arg_parse(parser):
@@ -91,6 +92,8 @@ if __name__ == '__main__':
         trainer = GB_with_Weva_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     elif conf['mode'] == 'GBwevaScore':
         trainer = GB_with_Weva_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
+    elif conf['mode'] == 'GBwevaScoreSum':
+        trainer = GB_with_Weva_Score_Sum_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     else :
         pass
     
