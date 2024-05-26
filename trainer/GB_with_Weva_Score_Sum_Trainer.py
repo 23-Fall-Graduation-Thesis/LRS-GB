@@ -1,7 +1,8 @@
 from trainer.TrainerBase import TrainerBase
 from scheduler.GB_with_weva_score_sum import GB_with_Weva_Score_Sum
 
-import copy, torch, math, csv, os
+import copy, torch, math, csv, os, random
+import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 
 from datetime import datetime
@@ -31,6 +32,15 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
             self.get_weva =  compute_weight_variation
             self.get_weva_and_diff = compute_weight_difference_and_variation
 
+    def set_seed(self, seed=2023):
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+    
     def train_model(self, epochs, init_lr):
         start_time = datetime.now().strftime('%m-%d_%H%M%S')
         print('\nStart training at', start_time)

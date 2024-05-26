@@ -16,6 +16,29 @@ class TargetLRBase(ABC):
 class AutoLRTargetLR(TargetLRBase):
     def __init__(self):
         super().__init__()
+
+    # calculate target lr based target weight variance
+    def cal_target_lr(self, now_weva, now_lr, target_weva, cls_lr):
+        target_lr = now_weva[:]
+        Gvalue = []
+        for i in range(len(now_lr)):
+            Gvalue.append(now_weva[i]/now_lr[i])
+
+        for i in range(len(target_lr)):
+            target_lr[i] = (target_weva[i] - now_weva[i]) / Gvalue[i] + now_lr[i]
+
+        target_lr.append(cls_lr) # classifier lr 고정해서 사용
+
+        return target_lr
+    
+    
+    def cal_target_init_lr(self):
+        pass
+
+
+class AdvAutoLRTargetLR(TargetLRBase):
+    def __init__(self):
+        super().__init__()
         # self.alpha = 0.9   # for constant momentum
         self.epoch = -1
         self.oscillation = [] # target을 기준으로 통과한 횟수 (진동 횟수 count하여 momentum의 정도 결정)

@@ -8,7 +8,7 @@ class GB_with_Weva_Score_Sum(SchedulerBase):
             #### change score function ####
             instances = dict(
                 weva_method = "LRSGBwithTargetWeight",
-                lr_method = "AutoLRTargetLR",
+                lr_method = "AdvAutoLRTargetLR",
                 condition_method = "GBwevaSumCondition" 
             )
         super().__init__(model, model_name, init_lr, instances)
