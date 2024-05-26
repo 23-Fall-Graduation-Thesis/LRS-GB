@@ -17,7 +17,7 @@ class AutoLR(SchedulerBase):
         self.gamma = 0.2
         self.cls_lr = 0.001
 
-        self.e_drop = self.all_epoch * 0.8
+        self.e_drop = int(self.all_epoch * 0.8)
         self.e_end = self.all_epoch
         self.mlast = 3
 

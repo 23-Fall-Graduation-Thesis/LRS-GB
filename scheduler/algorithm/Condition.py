@@ -131,10 +131,14 @@ class GBwevaCondition(ConditionBase):
     def get_condition(self):
         return self.thr_init_score
     
-    def get_layer_score(self):
-        return self.score_list
+    def get_layer_score(self, bool=True):
+        if bool:
+            return self.bool_score_list
+        else:
+            return self.score_list
     
     def get_init_score(self, init_weva, target_init_weva):
+        self.bool_score_list = []
         self.score_list = []
         score = 1.
         for cur, target in zip(init_weva, target_init_weva):
@@ -142,7 +146,8 @@ class GBwevaCondition(ConditionBase):
                 err = (target-cur)/target
             else:
                 err = min(self.lamb * (cur-target)/target, 1)
-            self.score_list.append(1-err >= self.thr_init_score) # [True, True, False, ..]
+            self.bool_score_list.append(1-err >= self.thr_init_score) # [True, True, False, ..]
+            self.score_list.append(1-err)
             score = min(score, 1 - err)
         return score
     

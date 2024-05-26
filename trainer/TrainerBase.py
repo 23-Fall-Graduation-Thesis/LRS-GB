@@ -85,6 +85,7 @@ class TrainerBase(ABC):
     
     def train_1epoch(self, model, optimizer_try):
         model = model.to(self.device)
+        model.train()
 
         train_loss = 0.0
         train_acc = 0
