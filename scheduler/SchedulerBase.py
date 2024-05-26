@@ -49,7 +49,8 @@ class SchedulerBase(ABC):
 
         if len(now_lr) == 1:
             # TODO
-            now_lr *= len(self.layer_name_list)
+            now_lr *= len(self.layer_name_list)-1
+            now_lr += [0.01]
 
         param_list = []
         for idx in range(len(self.layer_name_list)):
