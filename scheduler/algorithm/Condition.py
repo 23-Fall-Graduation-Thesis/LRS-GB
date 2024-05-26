@@ -189,13 +189,16 @@ class GBwevaSumCondition(ConditionBase):
         return self.thr_init_score
     
     
-    def get_layer_score(self):
-        return self.score_list
+    def get_layer_score(self, bool=True):
+        if bool:
+            return self.bool_score_list
+        else:
+            return self.score_list
     
     
     def get_init_score(self, weva, target_weva):
+        self.bool_score_list = []
         self.score_list = []
-        score_list = []
         score = 1.
         
         if len(self.cumulated_target_weva) == 0:
@@ -204,8 +207,8 @@ class GBwevaSumCondition(ConditionBase):
                     err = (target-cur)/target
                 else:
                     err = min(self.lamb * (cur-target)/target, 1)
-                self.score_list.append(1-err >= self.thr_init_score) # [True, True, False, ..]
-                score_list.append(1-err)
+                self.bool_score_list.append(1-err >= self.thr_init_score)
+                self.score_list.append(1-err)
                 score = min(score, 1 - err)
                 # print(score)
             
@@ -216,15 +219,14 @@ class GBwevaSumCondition(ConditionBase):
                     err = (tmp_target-tmp_cur)/tmp_target
                 else:
                     err = min(self.lamb * (tmp_cur-tmp_target)/tmp_target, 1)
-                self.score_list.append(1-err >= self.thr_init_score) # [True, True, False, ..]
-                score_list.append(1-err)
+                self.bool_score_list.append(1-err >= self.thr_init_score) # [True, True, False, ..]
+                self.score_list.append(1-err)
                 score = min(score, 1 - err)
                 # print(score)
         
         # print(score, sum(score_list)/len(score_list))
-        mean_score = sum(score_list)/len(score_list)
-        # return score
-        return mean_score
+        # mean_score = sum(score_list)/len(score_list)
+        return score
 
 
     def adjust_bound(self, weva, target_weva):

@@ -68,6 +68,7 @@ class AdvAutoLRTargetLR(TargetLRBase):
             #     target_lr[i] = mom * now_lr[i] + (1-mom) * ((target_weva[i] - now_weva[i]) / Gvalue[i] + now_lr[i]) # apply score momentum
             if (target_weva[i] - now_weva[i]) * self.oscillation[i][0] < 0:
                 self.oscillation[i][1] += 1 # 진동 횟수 1회 추가
+                #TODO: 0.5 바꾸기
             mom = 1 - pow(0.5, self.oscillation[i][1]) # 진동 횟수가 클수록 now_lr로부터 많이 변화하지 않도록
             target_lr[i] = mom * now_lr[i] + (1-mom) * ((target_weva[i] - now_weva[i]) / Gvalue[i] + now_lr[i]) # apply score momentum
             self.oscillation[i][0] = target_weva[i] - now_weva[i] # update
