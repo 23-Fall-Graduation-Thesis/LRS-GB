@@ -217,7 +217,7 @@ class GB_with_Weva_Score_Trainer(TrainerBase):
                 # if bad_count == 30:
                 #     break
 
-            now_lr = lr_scheduler.decay_lr(epoch, now_lr)
+            # now_lr = lr_scheduler.decay_lr(epoch, now_lr)
 
         end_time = datetime.now().strftime('%m-%d_%H%M%S')
         #print('\nFinish training at', end_time)

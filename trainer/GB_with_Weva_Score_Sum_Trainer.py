@@ -52,7 +52,6 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
         ntrial_success = []
 
         # lr_scheduler = GB_with_Weva(self.model, self.model_name, init_lr, self.thr_init_score, self.K, self.scale_factor, self.bound, self.all_epoch, self.target_func) #TODO instance arg_parser
-        # lr_scheduler = GB_with_Weva_Score(self.model, self.model_name, init_lr, self.thr_init_score, self.K, self.scale_factor, self.bound, self.all_epoch, self.target_func) #TODO instance arg_parser
         lr_scheduler = GB_with_Weva_Score_Sum(self.model, self.model_name, init_lr, self.thr_init_score, self.K, self.scale_factor, self.bound, self.all_epoch, self.target_func) #TODO instance arg_parser
         self.optimizer = lr_scheduler.optimizer_binding(self.model, [init_lr])
         
@@ -78,9 +77,6 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
             wr.writerow(['epoch', 'trial', 'score', 'target_weva', 'tryweva', 'try_initweva', 'current_lr'])
 
         for epoch in range(epochs):
-            # if self.increase_bound:
-            #     now_K = increase_K(epoch, epochs, self.K, self.inc_type)
-            #     lr_scheduler.weva_manager.K = now_K
             print('Epoch:{:04d}'.format(epoch+1))
             # if not strict :
             #     # decreasing thr_score 
@@ -99,12 +95,14 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
             # model_temp = copy.deepcopy(self.model)
 
             while Trial_error:
+                # set seed for fix dataloader
+                self.set_seed(2023+epoch)
                 trial = trial + 1
                 if trial > 50:
                     print('WARNING: trial is larger than 50')
                     with open(f"./results/trial.csv", 'a', newline='') as f:
                         wr = csv.writer(f)
-                        wr.writerow(['GBweva', model_name, dataset, epoch, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.target_func, self.log_time])
+                        wr.writerow(['GBwevaSum', model_name, dataset, epoch, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.target_func, self.log_time])
         
                     exit()
                 
@@ -113,9 +111,6 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
                 optimizer_try = lr_scheduler.optimizer_binding(model_try, now_lr)
                 train_loss, train_acc, model_try = self.train_1epoch(model_try, optimizer_try)
     
-                # weight variation and difference between pretrained model
-                # if epoch == 1:
-                #     model_try = self.model
                 weva_try, diff_try, param_num_list = self.get_weva_and_diff(model_temp, model_try, lr_scheduler.layer_name_dict)
                 init_weva_try, init_diff_try, param_num_list = self.get_weva_and_diff(self.pretrain_model, model_try, lr_scheduler.layer_name_dict)
                 init_diff_table.append(init_diff_try)
@@ -156,6 +151,14 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
 
                 print('trial: {}, init score: {:.4f}, Train Loss: {:.8f} Acc: {:.8f}'.format(trial, init_score, train_loss, train_acc))
 
+                epoinitLfmt = ['{:.6f}']*(len(init_weva_try)-1)
+                epoinitLfmt =' '.join(epoinitLfmt)
+                values2 = []
+                for i in range(len(init_weva_try)-1):
+                    values2.append(init_weva_try[i])
+                epoinitLfmt = '   TryInitWeVa :' + epoinitLfmt
+                # print(epoinitLfmt.format(*values2))
+
                 epoLfmt = ['{:.6f}']*(len(weva_try)-1)
                 epoLfmt =' '.join(epoLfmt)
                 values1 = []
@@ -164,15 +167,7 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
                 epoLfmt = '       TryWeVa :' + epoLfmt
                 print(epoLfmt.format(*values1))
 
-                epoinitLfmt = ['{:.6f}']*(len(init_weva_try)-1)
-                epoinitLfmt =' '.join(epoinitLfmt)
-                values2 = []
-                for i in range(len(init_weva_try)-1):
-                    values2.append(init_weva_try[i])
-                epoinitLfmt = '   TryInitWeVa :' + epoinitLfmt
-                print(epoinitLfmt.format(*values2))
-
-                de_weva = lr_scheduler.target_weva_set[-1]
+                de_weva = lr_scheduler.target_weva_set[-1][:-1]
                 epoinitLfmt = ['{:.6f}'] * len(de_weva)
                 epoinitLfmt = ' '.join(epoinitLfmt)
                 values3 = []
@@ -181,6 +176,15 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
                 epoinitLfmt = '    TargetWeVa :' + epoinitLfmt
                 print(epoinitLfmt.format(*values3))
 
+                scores = lr_scheduler.condition_manager.get_layer_score(bool=False)
+                epoLfmt = ['{:.6f}'] * (len(scores))
+                epoLfmt = ' '.join(epoLfmt)
+                values5 = []
+                for i in range(len(scores)):
+                    values5.append(scores[i])
+                epoLfmt = '         Score :' + epoLfmt
+                print(epoLfmt.format(*values5))
+
                 epoLfmt = ['{:.6f}'] * (len(optimizer_try_lrs)-1)
                 epoLfmt = ' '.join(epoLfmt)
                 values4 = []
@@ -188,7 +192,7 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
                     values4.append(optimizer_try_lrs[i])
                 epoLfmt = '  LearningRate :' + epoLfmt
                 print(epoLfmt.format(*values4))
-                
+
                 if Trial_error == False:
                     with open(epoch_log_filename, 'a', newline='') as f:
                         wr = csv.writer(f)
@@ -197,7 +201,6 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
 
                 print()
                 
-            
             if epoch % 5 == 0 or epoch == epochs-1:
                 valid_loss, valid_acc = self.validation()
                 valid_logs.append([epoch, valid_acc, valid_loss, train_acc-valid_acc])
@@ -217,7 +220,7 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
                 # if bad_count == 30:
                 #     break
 
-            now_lr = lr_scheduler.decay_lr(epoch, now_lr)
+            # now_lr = lr_scheduler.decay_lr(epoch, now_lr)
 
         end_time = datetime.now().strftime('%m-%d_%H%M%S')
         #print('\nFinish training at', end_time)
