@@ -23,7 +23,7 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
         self.all_epoch = conf['epoch']
         self.target_func = conf['target_func']
 
-        self.method = 'GBweva_score'
+        self.method = 'GBweva_score_sum'
         
         if conf['norm'] == 'L1' :
             self.get_weva =  compute_L1_weight_variation
@@ -102,7 +102,7 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
                     print('WARNING: trial is larger than 50')
                     with open(f"./results/trial.csv", 'a', newline='') as f:
                         wr = csv.writer(f)
-                        wr.writerow(['GBwevaSum', model_name, dataset, epoch, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.target_func, self.log_time])
+                        wr.writerow([self.method, model_name, dataset, epoch, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.target_func, self.log_time])
         
                     exit()
                 
