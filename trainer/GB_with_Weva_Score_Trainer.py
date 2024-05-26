@@ -32,7 +32,7 @@ class GB_with_Weva_Score_Trainer(TrainerBase):
             self.get_weva =  compute_weight_variation
             self.get_weva_and_diff = compute_weight_difference_and_variation
 
-    def set_seed(seed=2023):
+    def set_seed(self, seed=2023):
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)

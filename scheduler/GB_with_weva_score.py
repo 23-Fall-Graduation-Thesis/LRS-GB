@@ -19,7 +19,7 @@ class GB_with_Weva_Score(SchedulerBase):
         self.gamma = 0.2
         self.cls_lr = 0.01
 
-        self.e_drop = self.all_epoch * 0.8 # 30의 0.8
+        self.e_drop = int(self.all_epoch * 0.8)
         self.e_end = self.all_epoch
         self.mlast = 3
 
@@ -65,8 +65,9 @@ class GB_with_Weva_Score(SchedulerBase):
     
     
     def decay_lr(self, epoch, now_lr):
-        if epoch == self.e_drop - 1:
-            for i in range(len(now_lr)):
-                now_lr[i] = now_lr[i] * self.gamma
+        # delete
+        # if epoch == self.e_drop - 1:
+        #     for i in range(len(now_lr)):
+        #         now_lr[i] = now_lr[i] * self.gamma
         
         return now_lr
