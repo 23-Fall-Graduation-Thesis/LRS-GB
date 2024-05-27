@@ -35,6 +35,7 @@ def arg_parse(parser):
     parser.add_argument('--MAX_scale_factor', default=10.0, type=float, help='range of layer-wise constraint scaling')
 
     parser.add_argument("--max-evals", dest="max_evals", action="store", default="20")
+    parser.add_argument('--device', type=int, default=2, help='CUDA device')
     
     return parser.parse_args()
 
@@ -42,7 +43,7 @@ def arg_parse(parser):
 def objective(search_space):
     global args
     #! main.py에 새로운 파라미터를 추가하거나 없앴으면 이부분 역시 수정해야합니다. (2)
-    cmd = ["python", "main.py", "--dataset=" + args.dataset, "--model=" + args.model, "--mode=" + args.mode, "--epoch=" + str(args.epoch), "--norm=" + args.norm, "--target_func=" + args.target_func]
+    cmd = ["python", "main.py", "--dataset=" + args.dataset, "--model=" + args.model, "--mode=" + args.mode, "--epoch=" + str(args.epoch), "--norm=" + args.norm, "--target_func=" + args.target_func, "--device=" + str(args.device)]
     cmd.append("--opt=" + str(True))
     
     if args.mode == "autoGB":

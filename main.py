@@ -19,7 +19,7 @@ def arg_parse(parser):
     parser.add_argument('--batch_size', type=int, default=64, help='batch size')
     parser.add_argument('--epoch', type=int, default=30, help='Epoch')
     parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
-    parser.add_argument('--device', type=int, default=0, help='CUDA device')
+    parser.add_argument('--device', type=int, default=2, help='CUDA device')
     parser.add_argument('--pretrain', type=str2bool, nargs='?', const=True, default=False, help="Pretrain")
 
     # Fine-tuning Options

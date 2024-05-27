@@ -75,6 +75,7 @@ class AutoLR_Trainer(TrainerBase):
                     with open(f"./results/trial.csv", 'a', newline='') as f:
                         wr = csv.writer(f)
                         wr.writerow(['autoLR', model_name, dataset, epoch, self.max_f, self.min_f, self.thr_score, '-', '-', '-', '-', self.log_time])
+                    os.remove(self.checkpt)
                     exit()
                 
                 model_temp = copy.deepcopy(self.model)
@@ -99,6 +100,7 @@ class AutoLR_Trainer(TrainerBase):
                     with open(f"./results/nan.csv", 'a', newline='') as f:
                         wr = csv.writer(f)
                         wr.writerow(['autoLR', model_name, dataset, epoch, self.max_f, self.min_f, self.thr_score, '-', '-', '-', '-', '-', weva_try[:-1], optimizer_try_lrs[:-1], self.log_time])
+                    os.remove(self.checkpt)
                     exit()
 
                 # Success (score >= threshold score)
