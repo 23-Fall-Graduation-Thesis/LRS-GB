@@ -9,6 +9,7 @@ from model.pretrained_models import select_model
 from trainer.Standard_Trainer import Standard_Trainer
 from trainer.AutoLR_Trainer import AutoLR_Trainer
 from trainer.GB_with_Weva_Trainer import GB_with_Weva_Trainer
+from trainer.GB_with_Weva_Score_Trainer import GB_with_Weva_Score_Trainer
 import random
 
 def arg_parse(parser):
@@ -52,8 +53,8 @@ def set_seed(seed=2023):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    # torch.backends.cudnn.deterministic = True
-    # torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 if __name__ == '__main__':
     # arguments parsing
@@ -88,6 +89,8 @@ if __name__ == '__main__':
     #     trainer = Auto_Start_GB_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     elif conf['mode'] == 'GBweva':
         trainer = GB_with_Weva_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
+    elif conf['mode'] == 'GBwevaScore':
+        trainer = GB_with_Weva_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     else :
         pass
     
