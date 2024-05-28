@@ -57,13 +57,13 @@ class Standard_Trainer(TrainerBase):
         end_test_time = datetime.now().strftime('%m-%d_%H%M%S')
         #print('\nFinish training at', end_test_time)
 
-        model_name = self.board_name.split('/')[1]
-        dataset = self.board_name.split('/')[2].split('_')[0]
+        model_name = self.board_name.split('/')[0]
+        dataset = self.board_name.split('/')[1]
         
         log_filename = './results/' + dataset + '_log.csv'
         with open(log_filename, 'a', newline='') as f:
             wr = csv.writer(f)
-            wr.writerow(['standard', model_name, dataset, init_lr, '-', '-', '-', '-', '-', '-', test_acc, best_gap, self.log_time])
+            wr.writerow(['standard', model_name, dataset, init_lr, '-', '-', '-', '-', '-', '-', '-', test_acc, best_gap, self.log_time])
 
 
         return start_time, end_test_time

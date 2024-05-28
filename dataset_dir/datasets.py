@@ -186,7 +186,7 @@ class StanfordCarsCustomDataset(Dataset):
         img_trans = self.transforms(img_pil)
 
         # Parse out the label from cars_meta and cars_x_annos files
-        image_stem = image.split("\\")[-1]
+        image_stem = image.split("/")[-1]
         img_label = self.image_label_dict[image_stem]
 
         return img_trans, img_label

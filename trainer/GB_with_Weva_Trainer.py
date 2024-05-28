@@ -93,7 +93,7 @@ class GB_with_Weva_Trainer(TrainerBase):
                     with open(f"./results/trial.csv", 'a', newline='') as f:
                         wr = csv.writer(f)
                         wr.writerow(['GBweva', model_name, dataset, epoch, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.target_func, self.log_time])
-        
+                    os.remove(self.checkpt)
                     exit()
                 
                 model_temp = copy.deepcopy(self.model)
@@ -122,7 +122,7 @@ class GB_with_Weva_Trainer(TrainerBase):
                         wr = csv.writer(f)
                         # wr.writerow([self.model_name, self.dataset])
                         wr.writerow(['GBweva', model_name, dataset, epoch, '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.target_func, init_weva_try, weva_try[:-1], optimizer_try_lrs[:-1], self.log_time])
-                        
+                    os.remove(self.checkpt)
                     exit()
 
                 # Success 
