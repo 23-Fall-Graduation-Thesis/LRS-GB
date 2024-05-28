@@ -33,7 +33,7 @@ def arg_parse(parser):
     parser.add_argument('--MAX_K', default=20.0, type=float, help='range of Lipschitz constant')
     parser.add_argument('--MIN_scale_factor', default=1.0, type=float, help='range of layer-wise constraint scaling')
     parser.add_argument('--MAX_scale_factor', default=10.0, type=float, help='range of layer-wise constraint scaling')
-
+    parser.add_argument('--scale_factor', default=None, type=float, help='layer-wise constraint scaling')
     parser.add_argument("--max-evals", dest="max_evals", action="store", default="20")
     
     return parser.parse_args()
@@ -54,8 +54,11 @@ def objective(search_space):
         cmd.append("--max_f=" + str(search_space["max_f"]))
     else:
         cmd.append("--K=" + str(search_space["K"]))
-        cmd.append("--scale_factor=" + str(search_space["scale_factor"]))
-    
+        if args.scale_factor is None:
+            cmd.append("--scale_factor=" + str(search_space["scale_factor"]))
+        else:
+            cmd.append("--scale_factor=" + str(args.scale_factor))
+            
     proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.DEVNULL, universal_newlines=True)
     loss = 0.0
     line = None
@@ -87,7 +90,8 @@ if __name__ == '__main__':
         space["max_f"] = hp.uniform("max_f", args.MIN_max_f, args.MAX_max_f)
     else:
         space["K"] = hp.uniform("K", args.MIN_K, args.MAX_K)
-        space["scale_factor"] = hp.uniform("scale_factor", args.MIN_scale_factor, args.MAX_scale_factor)
+        if args.scale_factor is None:
+            space["scale_factor"] = hp.uniform("scale_factor", args.MIN_scale_factor, args.MAX_scale_factor)
     
     conf = dict()
     conf = dict(conf, **args.__dict__)
