@@ -78,25 +78,25 @@ if __name__ == '__main__':
         print()
         prnt(conf)
 
-    checkpt, board_name, log_time = set_loggers(conf)
+    checkpt, checkpt_last, board_name, log_time = set_loggers(conf)
 
     model = select_model(conf['model'], num_class, pretrained_model=(not conf['pretrain']), checkpt=conf['model_path'])
 
 
     if conf['mode'] == 'standard' or conf['pretrain']:
-        trainer = Standard_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
+        trainer = Standard_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, checkpt_last, board_name, log_time))
     elif conf['mode'] == 'auto':
-        trainer = AutoLR_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
+        trainer = AutoLR_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, checkpt_last, board_name, log_time))
     # elif conf['mode'] == 'GB':
     #     trainer = LRS_GB_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     # elif conf['mode'] == 'autoGB':
     #     trainer = Auto_Start_GB_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
     elif conf['mode'] == 'GBweva':
-        trainer = GB_with_Weva_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
+        trainer = GB_with_Weva_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, checkpt_last, board_name, log_time))
     elif conf['mode'] == 'GBwevaScore':
-        trainer = GB_with_Weva_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
+        trainer = GB_with_Weva_Score_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, checkpt_last, board_name, log_time))
     elif conf['mode'] == 'GBwevaScoreSum':
-        trainer = GB_with_Weva_Score_Sum_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, board_name, log_time))
+        trainer = GB_with_Weva_Score_Sum_Trainer(model, conf, (trainloader, validloader, testloader), (checkpt, checkpt_last, board_name, log_time))
     else :
         pass
     

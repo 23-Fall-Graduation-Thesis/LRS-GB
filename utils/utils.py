@@ -48,11 +48,12 @@ def set_loggers(conf):
         os.makedirs(f"./model/weight/{conf['model']}/{conf['dataset']}/{conf['mode']}/", exist_ok=True)
         os.makedirs(f"./results/tensor_log/{conf['model']}/{conf['dataset']}/{conf['mode']}", exist_ok=True)
         checkpt = f"./model/weight/{conf['model']}/{conf['dataset']}/{conf['mode']}/{setting}_{log_time}.pt"
+        checkpt_last = f"./model/weight/{conf['model']}/{conf['dataset']}/{conf['mode']}/{setting}_{log_time}_last.pt"
         board_name = f"{conf['model']}/{conf['dataset']}/{conf['mode']}/{setting}_{log_time}"
 
         print('model:', conf['model'], ' dataset:', conf['dataset'], 'fine-tuning mode:', conf['mode'])
 
-    return checkpt, board_name, log_time
+    return checkpt, checkpt_last, board_name, log_time
 
 
 def get_size_scalar(torch_tensor):

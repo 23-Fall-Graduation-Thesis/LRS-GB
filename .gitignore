@@ -15,7 +15,8 @@ model/weight
 *.__pycache__
 __pycache__/
 model/weight
-model/best_weight
+model/best_weight18
+model/best_weight50
 ref/
 
 results/

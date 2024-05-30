@@ -218,6 +218,7 @@ class GB_with_Weva_Score_Trainer(TrainerBase):
                 #     break
 
             # now_lr = lr_scheduler.decay_lr(epoch, now_lr)
+            torch.save(self.model.state_dict(), self.checkpt_last)
 
         end_time = datetime.now().strftime('%m-%d_%H%M%S')
         #print('\nFinish training at', end_time)
@@ -225,9 +226,14 @@ class GB_with_Weva_Score_Trainer(TrainerBase):
         start_test_time = datetime.now().strftime('%m-%d_%H%M%S')
         #print('\nStart testing at', start_test_time)
         
-        test_loss, test_acc = self.test()
+        print('\nbest test')
+        test_loss, test_acc = self.test(self.checkpt)
         print('Load {}th epoch'.format(best_epoch))
         print('test loss:{:.3f}'.format(test_loss), 'acc:{:.2f}'.format(test_acc))
+        
+        print('\nlast test')
+        test_last_loss, test_last_acc = self.test(self.checkpt_last)
+        print('test loss:{:.3f}'.format(test_last_loss), 'acc:{:.2f}'.format(test_last_acc))
         
         end_test_time = datetime.now().strftime('%m-%d_%H%M%S')
         #print('\nFinish training at', end_test_time)
@@ -243,9 +249,9 @@ class GB_with_Weva_Score_Trainer(TrainerBase):
             writer.add_scalar('Loss/val', loss, epoch)
             writer.add_scalar('Generalization_GAP', gap, epoch)
 
-        log_filename = './results/' + dataset + '_log.csv'
+        log_filename = './results/' + dataset + '_log_new.csv'
         with open(log_filename, 'a', newline='') as f:
             wr = csv.writer(f)
-            wr.writerow([self.method, model_name, dataset, '-', '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.target_func, test_acc, best_gap, self.log_time])
+            wr.writerow([self.method, model_name, dataset, '-', '-', '-', '-', self.thr_init_score, self.K, self.scale_factor, self.target_func, test_acc, best_gap, test_last_acc, train_acc-valid_acc, self.log_time])
             
         return start_time, end_test_time
