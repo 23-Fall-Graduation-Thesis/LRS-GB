@@ -167,11 +167,14 @@ class GBwevaSumCondition(ConditionBase):
         self.cumulated_target_weva = []
 
 
-    def check_condition(self, weva_try, target_weva_set) :
+    def check_condition(self, weva_try, target_weva_set, init_weva_try=None) :
         check_GB = True
         if len(target_weva_set) > 0:
             target_weva = target_weva_set[-1]
-            init_score = self.get_init_score(weva_try[:-1], target_weva) # LRS_score
+            if init_weva_try is None:
+                init_score = self.get_init_score(weva_try[:-1], target_weva) # LRS_score
+            else:
+                init_score = self.get_init_score(weva_try[:-1], target_weva, init_weva_try[:-1])
         else:
             raise ValueError("target init weva must be calculated before check condition")
 
@@ -196,7 +199,7 @@ class GBwevaSumCondition(ConditionBase):
             return self.score_list
     
     
-    def get_init_score(self, weva, target_weva):
+    def get_init_score(self, weva, target_weva, init_weva_try=None):
         self.bool_score_list = []
         self.score_list = []
         score = 1.
@@ -213,17 +216,27 @@ class GBwevaSumCondition(ConditionBase):
                 # print(score)
             
         else:  
-            for cum_cur, cur, cum_target, target in zip(self.cumulated_weva, weva, self.cumulated_target_weva, target_weva):
-                tmp_cur, tmp_target = cum_cur+cur, cum_target+target
-                if tmp_cur < tmp_target:
-                    err = (tmp_target-tmp_cur)/tmp_target
-                else:
-                    err = min(self.lamb * (tmp_cur-tmp_target)/tmp_target, 1)
-                self.bool_score_list.append(1-err >= self.thr_init_score) # [True, True, False, ..]
-                self.score_list.append(1-err)
-                score = min(score, 1 - err)
+            if init_weva_try is None:
+                for cum_cur, cur, cum_target, target in zip(self.cumulated_weva, weva, self.cumulated_target_weva, target_weva):
+                    tmp_cur, tmp_target = cum_cur+cur, cum_target+target
+                    if tmp_cur < tmp_target:
+                        err = (tmp_target-tmp_cur)/tmp_target
+                    else:
+                        err = min(self.lamb * (tmp_cur-tmp_target)/tmp_target, 1)
+                    self.bool_score_list.append(1-err >= self.thr_init_score) # [True, True, False, ..]
+                    self.score_list.append(1-err)
+                    score = min(score, 1 - err)
                 # print(score)
-        
+            else:
+                for init_cur, cum_target, target in zip(init_weva_try, self.cumulated_target_weva, target_weva):
+                    tmp_cur, tmp_target = init_cur, cum_target+target
+                    if tmp_cur < tmp_target:
+                        err = (tmp_target-tmp_cur)/tmp_target
+                    else:
+                        err = min(self.lamb * (tmp_cur-tmp_target)/tmp_target, 1)
+                    self.bool_score_list.append(1-err >= self.thr_init_score) # [True, True, False, ..]
+                    self.score_list.append(1-err)
+                    score = min(score, 1 - err)
         # print(score, sum(score_list)/len(score_list))
         # mean_score = sum(score_list)/len(score_list)
         return score

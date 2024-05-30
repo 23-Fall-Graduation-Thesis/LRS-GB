@@ -21,7 +21,7 @@ def arg_parse(parser):
     parser.add_argument('--batch_size', type=int, default=64, help='batch size')
     parser.add_argument('--epoch', type=int, default=30, help='Epoch')
     parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
-    parser.add_argument('--device', type=int, default=2, help='CUDA device')
+    parser.add_argument('--device', type=int, default=0, help='CUDA device')
     parser.add_argument('--pretrain', type=str2bool, nargs='?', const=True, default=False, help="Pretrain")
 
     # Fine-tuning Options
@@ -40,6 +40,9 @@ def arg_parse(parser):
     parser.add_argument('--target_func', default='constant', type=str, help='constant, linear, inverse, cosine, step')
     parser.add_argument('--norm', type=str, default='L2', help='weight calculation using L1 norm or L2 norm')
 
+    # Try...
+    parser.add_argument('--isTry', default=False, type=str2bool, help='try some new method?')
+    
     # parser.add_argument('--bound', default='diff', type=str, help='diff or weva') # select weva
     # parser.add_argument('--increase_bound', type=str2bool, default=False, help='') # delete GB with increasing bound
     # parser.add_argument('--inc_type', default='log1', type=str, help='increase_bound type - linear(lin1, lin2), log(log1, log2), step')

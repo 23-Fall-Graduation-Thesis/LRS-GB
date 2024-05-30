@@ -24,6 +24,7 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
         self.target_func = conf['target_func']
 
         self.method = 'GBweva_score_sum'
+        self.isTry = conf['isTry']
         
         if conf['norm'] == 'L1' :
             self.get_weva =  compute_L1_weight_variation
@@ -52,7 +53,7 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
         ntrial_success = []
 
         # lr_scheduler = GB_with_Weva(self.model, self.model_name, init_lr, self.thr_init_score, self.K, self.scale_factor, self.bound, self.all_epoch, self.target_func) #TODO instance arg_parser
-        lr_scheduler = GB_with_Weva_Score_Sum(self.model, self.model_name, init_lr, self.thr_init_score, self.K, self.scale_factor, self.bound, self.all_epoch, self.target_func) #TODO instance arg_parser
+        lr_scheduler = GB_with_Weva_Score_Sum(self.model, self.model_name, init_lr, self.thr_init_score, self.K, self.scale_factor, self.bound, self.all_epoch, self.target_func, self.isTry) #TODO instance arg_parser
         self.optimizer = lr_scheduler.optimizer_binding(self.model, [init_lr])
         
         best = 0
@@ -118,7 +119,7 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
                 # if never caculated target init weva, 
                 # lr_scheduler.set_initial_weva(init_diff_table, epoch, param_num_list)
                 lr_scheduler.set_target_weva(init_diff_table, epoch, epochs, param_num_list)
-                Trial_error, init_score, target_weva = lr_scheduler.try_lr_update(weva_try)
+                Trial_error, init_score, target_weva = lr_scheduler.try_lr_update(weva_try, init_weva_try, self.isTry)
 
                 optimizer_try_lrs = lr_scheduler.get_lr(optimizer_try)
                 

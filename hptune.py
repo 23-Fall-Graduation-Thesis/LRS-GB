@@ -35,7 +35,9 @@ def arg_parse(parser):
     parser.add_argument('--MAX_scale_factor', default=10.0, type=float, help='range of layer-wise constraint scaling')
     parser.add_argument('--scale_factor', default=None, type=float, help='layer-wise constraint scaling')
     parser.add_argument("--max-evals", dest="max_evals", action="store", default="20")
-    parser.add_argument('--device', type=int, default=2, help='CUDA device')
+    parser.add_argument('--device', type=int, default=0, help='CUDA device')
+    
+    parser.add_argument('--isTry', default=False, type=str2bool, help='try some new method?')
     
     return parser.parse_args()
 
@@ -45,6 +47,8 @@ def objective(search_space):
     #! main.py에 새로운 파라미터를 추가하거나 없앴으면 이부분 역시 수정해야합니다. (2)
     cmd = ["python", "main.py", "--dataset=" + args.dataset, "--model=" + args.model, "--mode=" + args.mode, "--epoch=" + str(args.epoch), "--norm=" + args.norm, "--target_func=" + args.target_func, "--device=" + str(args.device)]
     cmd.append("--opt=" + str(True))
+    cmd.append("--isTry=" + str(args.isTry))
+    cmd.append("--thr_init_score=" + str(args.thr_init_score))
     
     if args.mode == "autoGB":
         cmd.append("--min_f=" + str(1.0)) # or 2.0 
@@ -59,7 +63,8 @@ def objective(search_space):
             cmd.append("--scale_factor=" + str(search_space["scale_factor"]))
         else:
             cmd.append("--scale_factor=" + str(args.scale_factor))
-            
+    
+    # print(cmd)
     proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.DEVNULL, universal_newlines=True)
     loss = 0.0
     line = None

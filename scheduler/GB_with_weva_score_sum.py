@@ -3,7 +3,7 @@ from scheduler.SchedulerBase import SchedulerBase
 import torch.optim as optim
 
 class GB_with_Weva_Score_Sum(SchedulerBase):
-    def __init__(self, model, model_name, init_lr, thr_init_score, K, scale_factor, bound, all_epoch, target_func, instances : Dict[str, str] = None):
+    def __init__(self, model, model_name, init_lr, thr_init_score, K, scale_factor, bound, all_epoch, target_func, isTry, instances : Dict[str, str] = None):
         if instances is None:
             #### change score function ####
             instances = dict(
@@ -13,6 +13,8 @@ class GB_with_Weva_Score_Sum(SchedulerBase):
             )
         super().__init__(model, model_name, init_lr, instances)
         # self.gen_bound = []
+        self.isTry = isTry
+        
         self.all_epoch = all_epoch
         
         self.scale = 1000000
@@ -60,8 +62,11 @@ class GB_with_Weva_Score_Sum(SchedulerBase):
         return target_lr
     
     
-    def try_lr_update(self, weva_try):
-        check_GB, init_score, target_weva = self.condition_manager.check_condition(weva_try, self.target_weva_set)
+    def try_lr_update(self, weva_try, init_weva_try, isTry):
+        if isTry:
+            check_GB, init_score, target_weva = self.condition_manager.check_condition(weva_try, self.target_weva_set, init_weva_try)
+        else:
+            check_GB, init_score, target_weva = self.condition_manager.check_condition(weva_try, self.target_weva_set)
         if check_GB:
             Trial_error = False
         else:
