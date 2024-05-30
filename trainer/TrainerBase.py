@@ -15,7 +15,7 @@ class TrainerBase(ABC):
 
         self.trainloader, self.validloader, self.testloader = loaders
 
-        self.checkpt, self.board_name, self.log_time = loggers
+        self.checkpt, self.checkpt_last, self.board_name, self.log_time = loggers
 
     @abstractmethod
     def train_model(self):
@@ -63,8 +63,8 @@ class TrainerBase(ABC):
         
         return valid_loss, valid_acc
     
-    def test(self):
-        self.model.load_state_dict(torch.load(self.checkpt))
+    def test(self, checkpt):
+        self.model.load_state_dict(torch.load(checkpt))
         self.model.eval()
         
         test_loss = 0
