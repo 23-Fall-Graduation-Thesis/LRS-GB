@@ -235,9 +235,9 @@ class GB_with_Weva_Score_Sum_Trainer(TrainerBase):
         print('Load {}th epoch'.format(best_epoch))
         print('test loss:{:.3f}'.format(test_loss), 'acc:{:.2f}'.format(test_acc))
         
-        print('\nlast test')
+        #! print('\nlast test')
         test_last_loss, test_last_acc = self.test(self.checkpt_last)
-        print('test loss:{:.3f}'.format(test_last_loss), 'acc:{:.2f}'.format(test_last_acc))
+        #! print('test loss:{:.3f}'.format(test_last_loss), 'acc:{:.2f}'.format(test_last_acc))
         
         end_test_time = datetime.now().strftime('%m-%d_%H%M%S')
         #print('\nFinish training at', end_test_time)

@@ -1,6 +1,7 @@
 import torch
 import torchvision
 import torchvision.transforms as transforms
+from torchvision.datasets import FGVCAircraft
 from torch.utils.data import DataLoader, random_split, Dataset
 from dataset_dir.cub200 import Cub2011
 
@@ -21,6 +22,8 @@ def datasetload(dataset_name, batch_size):
         return CUB200(batch_size)
     elif dataset_name == 'cars':
         return Cars(batch_size)
+    elif dataset_name == 'aircraft':
+        return Aircraft(batch_size)
 
 
 def Cifar10(batch_size):
@@ -190,3 +193,28 @@ class StanfordCarsCustomDataset(Dataset):
         img_label = self.image_label_dict[image_stem]
 
         return img_trans, img_label
+    
+
+def Aircraft(batch_size):
+    n_class = 100
+
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(), 
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    ])
+    
+    train_dataset = FGVCAircraft(root='./data/fgvc-aircraft-2013b', transform=transform, download=True, split="trainval")
+    dataset_size = len(train_dataset)
+    train_size = int(dataset_size * 0.8)
+    valid_size = dataset_size - train_size
+    trainset, validset = random_split(train_dataset, [train_size, valid_size])
+    
+    trainloader = DataLoader(trainset, batch_size, shuffle=True, drop_last=True, num_workers=0)
+    validloader = DataLoader(validset, batch_size, shuffle=True, drop_last=True, num_workers=0)
+    
+    test_dataset = FGVCAircraft(root='./data/fgvc-aircraft-2013b', transform=transform, download=True, split="test")
+    testloader = DataLoader(test_dataset, batch_size, shuffle=True, drop_last=True, num_workers=0)
+    
+    return trainloader, validloader, testloader, n_class
+
