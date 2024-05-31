@@ -206,15 +206,16 @@ def Aircraft(batch_size):
     
     train_dataset = FGVCAircraft(root='./data/fgvc-aircraft-2013b', transform=transform, download=True, split="trainval")
     dataset_size = len(train_dataset)
-    train_size = int(dataset_size * 0.8)
+    train_size = int(dataset_size * 0.5)
     valid_size = dataset_size - train_size
-    trainset, validset = random_split(train_dataset, [train_size, valid_size])
+    trainset, validset = random_split(train_dataset, [train_size+1, valid_size-1])
     
     trainloader = DataLoader(trainset, batch_size, shuffle=True, drop_last=True, num_workers=0)
     validloader = DataLoader(validset, batch_size, shuffle=True, drop_last=True, num_workers=0)
     
     test_dataset = FGVCAircraft(root='./data/fgvc-aircraft-2013b', transform=transform, download=True, split="test")
     testloader = DataLoader(test_dataset, batch_size, shuffle=True, drop_last=True, num_workers=0)
+    # print(train_size, valid_size, len(test_dataset))
     
     return trainloader, validloader, testloader, n_class
 
