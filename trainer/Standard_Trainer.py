@@ -1,15 +1,31 @@
+import copy
 from trainer.TrainerBase import TrainerBase
 
 import torch, csv
 from datetime import datetime
 from torch.utils.tensorboard import SummaryWriter
+from utils.lr_utils import layer_block_info
+from utils.lr_utils import compute_weight_variation, get_num_layer, compute_weight_difference_and_variation, compute_L1_weight_variation, compute_L1_weight_difference_and_variation, increase_K
+
 
 class Standard_Trainer(TrainerBase):
     def __init__(self, model, conf, loaders, loggers):
         super().__init__(model, conf['model'], conf['device'], loaders, loggers)
-
+        self.layer_name_list = layer_block_info(self.model_name)
+        self.layer_name_dict = dict()
+        for idx in range(len(self.layer_name_list)):
+            for layer_name in self.layer_name_list[idx]:
+                self.layer_name_dict[layer_name] = idx
+        self.pretrain_model = copy.deepcopy(model) 
+        
+        if conf['norm'] == 'L1' :
+            self.get_weva =  compute_L1_weight_variation
+            self.get_weva_and_diff = compute_L1_weight_difference_and_variation
+        elif conf['norm'] == 'L2':
+            self.get_weva =  compute_weight_variation
+            self.get_weva_and_diff = compute_weight_difference_and_variation
+        
     def train_model(self, epochs, init_lr):
-        # loss, optimizer define
         self.optimizer = torch.optim.SGD(self.model.parameters(), lr=init_lr)
         self.writer = SummaryWriter(f"./results/log/{self.board_name}")
         
@@ -44,7 +60,10 @@ class Standard_Trainer(TrainerBase):
                 # if bad_count == 30:
                 #     break
             torch.save(self.model.state_dict(), self.checkpt_last)
-            
+        
+        
+        init_weva, init_diff, param_num_list = self.get_weva_and_diff(self.pretrain_model, self.model, self.layer_name_dict)
+
         end_time = datetime.now().strftime('%m-%d_%H%M%S')
         #print('\nFinish training at', end_time)
         
@@ -69,7 +88,7 @@ class Standard_Trainer(TrainerBase):
         log_filename = './results/' + dataset + '_log_new.csv'
         with open(log_filename, 'a', newline='') as f:
             wr = csv.writer(f)
-            wr.writerow(['standard', model_name, dataset, init_lr, '-', '-', '-', '-', '-', '-', '-', test_acc, best_gap, test_last_acc, train_acc-valid_acc, self.log_time])
+            wr.writerow(['standard', model_name, dataset, init_lr, '-', '-', '-', '-', '-', '-', '-', test_acc, best_gap, test_last_acc, train_acc-valid_acc, init_weva, self.log_time])
 
 
         return start_time, end_test_time

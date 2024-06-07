@@ -73,6 +73,8 @@ def Cifar100(batch_size):
     testset = torchvision.datasets.CIFAR100(root='./data/cifar100', train=False, download=True, transform=transform)
     testloader = DataLoader(testset, batch_size, shuffle=True, drop_last=True, num_workers=0)
     
+    print(train_size, valid_size, len(testset))
+        
     return trainloader, validloader, testloader, n_class
     
 
@@ -120,6 +122,8 @@ def CUB200(batch_size):
     test_dataset = Cub2011(root='./data/cub-200-2011', transform=transform, download=True, train=False)
     testloader = DataLoader(test_dataset, batch_size, shuffle=True, drop_last=True, num_workers=0)
     
+    # print(train_size, valid_size, len(test_dataset))
+        
     return trainloader, validloader, testloader, n_class
 
 def Cars(batch_size):
